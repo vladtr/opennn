@@ -2778,10 +2778,10 @@ void NeuralNetwork::load_parameters_binary(const string& file_name)
 }
 
 
+/// Returns a string with the c function of the expression represented by the neural network.
 
 string NeuralNetwork::write_expression_c() const{
 
-    //vector<std::string> found_tokens;
     ostringstream buffer;
 
     bool logistic     = false;
@@ -2794,16 +2794,32 @@ string NeuralNetwork::write_expression_c() const{
     bool SoftPlus     = false;
     bool SoftSign     = false;
 
-    //Finish this text
     buffer << "/**" << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
     buffer << "artelnics@artelnics.com\t" << endl;
     buffer << "" << endl;
     buffer << "Your model has been exported to this c file." << endl;
-    buffer << "You can manage it... \t" << endl;
-    buffer << "Example:" << endl;
+    buffer << "You can manage it with the main method, where you \t" << endl;
+    buffer << "can change the values of your inputs. For example:" << endl;
     buffer << "" << endl;
-    buffer << "\tInputs Names: \t" << endl;
+
+    buffer << "if we want to add these 3 values (0.3, 2.5 and 1.8)" << endl;
+    buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
+    buffer << "main program has to look like this:" << endl;
+    buffer << "\t" << endl;
+    buffer << "int main(){ " << endl;
+	buffer << "\t" << "vector<float> inputs(3);"<< endl;
+    buffer << "\t" << endl;
+	buffer << "\t" << "const float asdas  = 0.3;" << endl;
+	buffer << "\t" << "inputs[0] = asdas;"        << endl;
+	buffer << "\t" << "const float input2 = 2.5;" << endl;
+	buffer << "\t" << "inputs[1] = input2;"       << endl;
+	buffer << "\t" << "const float input3 = 1.8;" << endl;
+	buffer << "\t" << "inputs[2] = input3;"       << endl;
+	buffer << "\t" << ". . ." << endl;
+    buffer << "\n" << endl;
+
+    buffer << "Inputs Names:" <<endl;
 
     const Tensor<string, 1> inputs = get_inputs_names();
     const Tensor<string, 1> outputs = get_outputs_names();
@@ -2832,7 +2848,6 @@ string NeuralNetwork::write_expression_c() const{
     buffer << "using namespace std;" << endl;
     buffer << "\n" << endl;
 
-    // Do stuff
     string expression = write_expression();
     vector<std::string> tokens;
     std::string token;
@@ -2845,7 +2860,6 @@ string NeuralNetwork::write_expression_c() const{
         tokens.push_back(token);
     }
 
-    // Do more stuff
     std::string target_string0("Logistic");
     std::string target_string1("ReLU");
     std::string target_string2("Threshold");
@@ -3069,7 +3083,6 @@ string NeuralNetwork::write_expression_c() const{
     buffer << "} \n" << endl;
 
     string out = buffer.str();
-    replace_all_appearances(out, "$$", "$");
     return out;
 }
 
@@ -3487,6 +3500,13 @@ string NeuralNetwork::write_expression_api() const
         replace_all_appearances(out, "$$", "$");
         return out;
     }
+}
+
+
+/// Returns a string with the javaScript function of the expression represented by the neural network.
+
+string NeuralNetwork::write_expression_javascript() const{
+
 }
 
 
