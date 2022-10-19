@@ -3620,6 +3620,288 @@ string NeuralNetwork::write_expression_python() const
 }
 
 
+///Once its finsihed, replace write_expression_python()
+string NeuralNetwork::write_expression_python2() const{
+
+    vector<std::string> found_tokens;
+    ostringstream buffer;
+
+    bool logistic     = false;
+    bool ReLU         = false;
+    bool Threshold    = false;
+    bool SymThreshold = false;
+    bool ExpLinear    = false;
+    bool SExpLinear   = false;
+    bool HSigmoid     = false;
+    bool SoftPlus     = false;
+    bool SoftSign     = false;
+
+    //Finish this text
+    buffer << "\'\'\' " << endl;
+    buffer << "Artificial Intelligence Techniques SL\t" << endl;
+    buffer << "artelnics@artelnics.com\t" << endl;
+    buffer << "" << endl;
+    buffer << "Your model has been exported to this c file." << endl;
+    buffer << "You can manage it... \t" << endl;
+    buffer << "Example:" << endl;
+    buffer << "" << endl;
+    buffer << "\tInputs Names: \t" << endl;
+
+    const Tensor<string, 1> inputs = get_inputs_names();
+    const Tensor<string, 1> outputs = get_outputs_names();
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (inputs[i] == "")
+        {
+            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
+            //found_tokens.push_back("input_" + to_string(i));
+        }
+        else
+        {
+            buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
+            //found_tokens.push_back(inputs[i]);
+        }
+    }
+
+    buffer << "\'\'\' " << endl;
+    buffer << "\n" << endl;
+    buffer << "import math" << endl;
+    buffer << "import numpy as np" << endl;
+    buffer << "\n" << endl;
+
+    // Do stuff
+    string expression = write_expression();
+    vector<std::string> tokens;
+    std::string token;
+    std::stringstream ss(expression);
+
+    while (getline(ss, token, '\n'))
+    {
+        if (token.size() > 1 && token.back() == '{'){ break; }
+        if (token.size() > 1 && token.back() != ';'){ token += ';'; }
+        tokens.push_back(token);
+    }
+
+    // Do more stuff
+    std::string target_string0("Logistic");
+    std::string target_string1("ReLU");
+    std::string target_string2("Threshold");
+    std::string target_string3("SymmetricThreshold");
+    std::string target_string4("ExponentialLinear");
+    std::string target_string5("ScaledExponentialLinear");
+    std::string target_string6("HardSigmoid");
+    std::string target_string7("SoftPlus");
+    std::string target_string8("SoftSign");
+
+    for (auto& t:tokens)
+    {
+        size_t substring_length0 = t.find(target_string0);
+        size_t substring_length1 = t.find(target_string1);
+        size_t substring_length2 = t.find(target_string2);
+        size_t substring_length3 = t.find(target_string3);
+        size_t substring_length4 = t.find(target_string4);
+        size_t substring_length5 = t.find(target_string5);
+        size_t substring_length6 = t.find(target_string6);
+        size_t substring_length7 = t.find(target_string7);
+        size_t substring_length8 = t.find(target_string8);
+
+        if (substring_length0 < t.size() && substring_length0!=0){ logistic = true; }
+        if (substring_length1 < t.size() && substring_length1!=0){ ReLU = true; }
+        if (substring_length2 < t.size() && substring_length2!=0){ Threshold = true; }
+        if (substring_length3 < t.size() && substring_length3!=0){ SymThreshold = true; }
+        if (substring_length4 < t.size() && substring_length4!=0){ ExpLinear = true; }
+        if (substring_length5 < t.size() && substring_length5!=0){ SExpLinear = true; }
+        if (substring_length6 < t.size() && substring_length6!=0){ HSigmoid = true; }
+        if (substring_length7 < t.size() && substring_length7!=0){ SoftPlus = true; }
+        if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
+    }
+
+    if(logistic)
+    {
+        buffer << "def Logistic (x):" << endl;
+        buffer << "\t" << "z = 1/(1+np.exp(-x))" << endl;
+        buffer << "\t" << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(ReLU)
+    {
+        buffer << "def ReLU (x):" << endl;
+        buffer << "\t" << "z = max(0, x)" << endl;
+        buffer << "\t" << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(Threshold)
+    {
+        buffer << "def Threshold (x):" << endl;
+        buffer << "\t"   << "if (x < 0):" << endl;
+        buffer << "\t\t" << "z = 0" << endl;
+        buffer << "\t"   << "else:" << endl;
+        buffer << "\t\t" << "z = 1" << endl;
+        buffer << "\t"   << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SymThreshold)
+    {
+        buffer << "def SymmetricThreshold (x):" << endl;
+        buffer << "\t"   << "if (x < 0):" << endl;
+        buffer << "\t\t" << "z = -1" << endl;
+        buffer << "\t"   << "else:" << endl;
+        buffer << "\t\t" << "z = 1" << endl;
+        buffer << "\t"   << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(ExpLinear)
+    {
+        buffer << "def ExponentialLinear (x):" << endl;
+        buffer << "\t"   << "float alpha = 1.67326" << endl;
+        buffer << "\t"   << "if (x>0):" << endl;
+        buffer << "\t\t" << "z = x" << endl;
+        buffer << "\t"   << "else:" << endl;
+        buffer << "\t\t" << "z = alpha*(np.exp(x)-1)" << endl;
+        buffer << "\t"   << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SExpLinear)
+    {
+        buffer << "def ExponentialLinear (x):" << endl;
+        buffer << "\t"   << "float alpha = 1.67326" << endl;
+        buffer << "\t"   << "float lambda = 1.05070" << endl;
+        buffer << "\t"   << "if (x>0):" << endl;
+        buffer << "\t\t" << "z = lambda*x" << endl;
+        buffer << "\t"   << "else:" << endl;
+        buffer << "\t\t" << "z = lambda*alpha*(np.exp(x)-1)" << endl;
+        buffer << "\t"   << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(HSigmoid)
+    {
+        buffer << "def HardSigmoid (x):" << endl;
+        buffer << "\t"   <<  "z = 1/(1+np.exp(-x))" << endl;
+        buffer << "\t"   <<  "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SoftPlus)
+    {
+        buffer << "def SoftPlus (x):" << endl;
+        buffer << "\t"   << "z = log(1+np.exp(x))" << endl;
+        buffer << "\t"   << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SoftSign)
+    {
+        buffer << "def SoftSign (x):" << endl;
+        buffer << "\t"   << "z = x/(1+abs(x))" << endl;
+        buffer << "\t"   << "return z" << endl;
+        buffer << "\n" << endl;
+    }
+
+    buffer << "class NeuralNetwork:" << endl;
+    buffer << "\t" << "def __init__(self):" << endl;
+    buffer << "\t\t" << "self.parameter_number = " << to_string(inputs.size()) << endl;
+    buffer << "\n" << endl;
+    buffer << "\t" << "def calculate_outputs(inputs):" << endl;
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (inputs[i] == "")
+        {
+            buffer << "\t\t" << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "]" << endl;
+        }
+        else
+        {
+            buffer << "\t\t" << inputs[i] << " = " << "inputs[" << to_string(i) << "]" << endl;
+        }
+    }
+
+    buffer << "" << endl;
+
+    found_tokens.push_back("exp");
+    found_tokens.push_back("tanh");
+    string sufix = "np.";
+
+    for (auto& t:tokens)
+    {
+        for (auto& key_word : found_tokens)
+        {
+            string new_word = "";
+            new_word = sufix + key_word;
+            replace_all_appearances(t, key_word, new_word);
+        }
+        buffer << "\t\t" << t << endl;
+    }
+
+    buffer << "\t\t" << "out = " << "[None]*" << outputs.size() << "" << endl;
+    for (int i = 0; i < outputs.dimension(0); i++)
+    {
+        if (outputs[i] == "")
+        {
+            buffer << "\t\t" << "out[" << to_string(i) << "] = " << "output" << to_string(i) << endl;
+        }
+        else
+        {
+            buffer << "\t\t" << "out[" << to_string(i) << "] = " << outputs[i] << endl;
+        }
+    }
+
+    buffer << "\n\t\t" << "return out;" << endl;
+    buffer << "\n" << endl;
+
+    buffer << "\t"   << "def main ():" << endl;
+    buffer << "\t\t" << "default_val = 3.1416" << endl;
+    buffer << "\t\t" << "inputs = [None]*" << to_string(inputs.size()) << "\n" << endl;
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (inputs[i] == "")
+        {
+            buffer << "\t\t" << "input_"  << to_string(i) << " = "  << "default_val" << "\t" << "#Change this value" << endl;
+            buffer << "\t\t" << "inputs[" << to_string(i) << "] = " << "input_" << to_string(i) << "\n" << endl;
+        }
+        else
+        {
+            buffer << "\t\t" << inputs[i] << " = " << "default_val" << "\t" << "#Change this value" << endl;
+            buffer << "\t\t" << "inputs[" << to_string(i) << "] = " << inputs[i] << "\n" << endl;
+        }
+    }
+
+    buffer << "" << endl;
+    buffer << "\t\t" << "outputs = NeuralNetwork.calculate_outputs(inputs)" << endl;
+    buffer << "" << endl;
+
+    buffer << "\t\t" << "print(\"\\nThese are your outputs:\\n\")" << endl;
+
+    for (int i = 0; i < outputs.dimension(0); i++)
+    {
+        if (outputs[i] == "")
+        {
+            buffer << "\t\t" << "print( \""<< "\\t " << "output" << to_string(i) << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
+        }
+        else
+        {
+            buffer << "\t\t" << "print( \""<< "\\t " << outputs_names[i] << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
+
+            //buffer << "\t" << "print( \"" << outputs_names[i] << ":" << " %f \\n\", "<< "outputs[" << to_string(i) << "]" << ");" << endl;
+        }
+    }
+
+    buffer << "\n" << "NeuralNetwork.main()" << endl;
+
+    //buffer << "\n\t" << "return 0;" << endl;
+    //buffer << "} \n" << endl;
+
+    string out = buffer.str();
+    return out;
+}
+
 
 
 /// Saves the mathematical expression represented by the neural network to a text file.
