@@ -3489,139 +3489,10 @@ string NeuralNetwork::write_expression_api() const
     }
 }
 
+
 /// Returns a string with the python function of the expression represented by the neural network.
-string NeuralNetwork::write_expression_python() const
-{
-    const Index layers_number = get_layers_number();
 
-    const Tensor<Layer*, 1> layers_pointers = get_layers_pointers();
-    const Tensor<string, 1> layers_names = get_layers_names();
-
-    ostringstream buffer;
-
-    buffer <<"'''"<<endl;
-    buffer <<"Artificial Intelligence Techniques SL\t"<<endl;
-    buffer <<"artelnics@artelnics.com\t"<<endl;
-    buffer <<""<<endl;
-    buffer <<"Your model has been exported to this python file." <<endl;
-    buffer <<"You can manage it with the 'NeuralNetwork' class.\t"<<endl;
-    buffer <<"Example:"<<endl;
-    buffer <<""<<endl;
-    buffer <<"\tmodel = NeuralNetwork()\t"<<endl;
-    buffer <<"\tsample = [input_1, input_2, input_3, input_4, ...]\t"<<endl;
-    buffer <<"\toutputs = model.calculate_output(sample)"<<endl;
-    buffer <<""<<endl;
-    buffer <<"\tInputs Names: \t"<<endl;
-
-    const Tensor<string, 1> inputs =  get_inputs_names();
-
-    for(int i = 0; i < inputs.dimension(0); i++)
-    {
-        if(inputs[i] == "")
-        {
-            buffer <<"\t" << to_string(1+i) + " )" << "input_"+ to_string(1+i) << endl;
-        }
-        else
-        {
-            buffer <<"\t" << to_string(1+i) + " )" << inputs[i] << endl;
-        }
-    }
-
-    buffer <<""<<endl;
-    buffer <<"You can predict with a batch of samples using calculate_batch_output method\t" <<endl;
-    buffer <<"IMPORTANT: input batch must be <class 'numpy.ndarray'> type\t" <<endl;
-    buffer <<"Example_1:\t" <<endl;
-    buffer <<"\tmodel = NeuralNetwork()\t"<<endl;
-    buffer <<"\tinput_batch = np.array([[1, 2], [4, 5]], np.int32)\t" <<endl;
-    buffer <<"\toutputs = model.calculate_batch_output(input_batch)"<<endl;
-    buffer <<"Example_2:\t" <<endl;
-    buffer <<"\tinput_batch = pd.DataFrame( {'col1': [1, 2], 'col2': [3, 4]})\t" <<endl;
-    buffer <<"\toutputs = model.calculate_batch_output(input_batch.values)"<<endl;
-    buffer <<"'''"<<endl;
-    buffer <<""<<endl;
-    buffer << "import numpy as np\n" << endl;
-    buffer << "class NeuralNetwork:\n " << endl;
-    buffer << "\tdef __init__(self):\n " << endl;
-
-    if(has_recurrent_layer())
-    {
-        buffer << "\t\tself.timestep = "+to_string(get_recurrent_layer_pointer()->get_timesteps())+"\n " << endl;
-        buffer << "\t\tself.hidden_states = " + to_string(get_recurrent_layer_pointer()->get_neurons_number()) + "*[0]\n " << endl;
-    }
-
-    if(has_long_short_term_memory_layer())
-    {
-        buffer << "\t\tself.timestep = "+to_string(get_long_short_term_memory_layer_pointer()->get_timesteps())+"\n " << endl;
-        buffer << "\t\tself.hidden_states = " + to_string(get_long_short_term_memory_layer_pointer()->get_neurons_number()) + "*[0]\n " << endl;
-        buffer << "\t\tself.cell_states = " + to_string(get_long_short_term_memory_layer_pointer()->get_neurons_number()) + "*[0]\n " << endl;
-    }
-
-    buffer << "\t\tself.parameters_number = " + to_string(get_parameters_number()) + "\n " << endl;
-
-    for(Index i = 0; i  < layers_number; i++)
-    {
-        buffer << layers_pointers[i]->write_expression_python() << endl;
-    }
-
-    buffer << "\tdef calculate_output(self, inputs):\n" << endl;
-
-    buffer << "\t\toutput_" + layers_pointers[0]->get_name() + " = self." +layers_pointers[0]->get_name() + "(inputs)\n" << endl;
-
-    for(Index i = 1; i  < layers_number; i++)
-    {
-        buffer << "\t\toutput_" + layers_pointers[i]->get_name() + " = self." +layers_pointers[i]->get_name() + "(output_"+layers_pointers[i-1]->get_name() + ")\n" << endl;
-    }
-
-    buffer << "\t\treturn output_" + layers_pointers[layers_number-1]->get_name()<<endl;
-
-    buffer << "\n\n\tdef calculate_batch_output(self, input_batch):\n" << endl;
-
-    buffer << "\t\toutput = []\n" << endl;
-
-    buffer << "\t\tfor i in range(input_batch.shape[0]):\n" << endl;
-
-    if(has_recurrent_layer())
-    {
-        buffer << "\t\t\tif(i%self.timestep==0):\n" << endl;
-
-        buffer << "\t\t\t\tself.hidden_states = "+to_string(get_recurrent_layer_pointer()->get_neurons_number())+"*[0]\n" << endl;
-    }
-
-    if(has_long_short_term_memory_layer())
-    {
-        buffer << "\t\t\tif(i%self.timestep==0):\n" << endl;
-
-        buffer << "\t\t\t\tself.hidden_states = "+to_string(get_long_short_term_memory_layer_pointer()->get_neurons_number())+"*[0]\n" << endl;
-
-        buffer << "\t\t\t\tself.cell_states = "+to_string(get_long_short_term_memory_layer_pointer()->get_neurons_number())+"*[0]\n" << endl;
-    }
-
-
-    buffer << "\t\t\tinputs = list(input_batch[i])\n" << endl;
-
-    buffer << "\t\t\toutput_" + layers_pointers[0]->get_name() + " = self." +layers_pointers[0]->get_name() + "(inputs)\n" << endl;
-
-    for(Index i = 1; i  < layers_number; i++)
-    {
-        buffer << "\t\t\toutput_" + layers_pointers[i]->get_name() + " = self." +layers_pointers[i]->get_name() + "(output_"+layers_pointers[i-1]->get_name() + ")\n" << endl;
-    }
-
-    buffer << "\t\t\toutput = np.append(output,output_" + layers_pointers[layers_number-1]->get_name()+ ", axis=0)\n"<< endl;
-
-    buffer << "\t\treturn output"<<endl;
-
-    string expression = buffer.str();
-
-    replace(expression, "+-", "-");
-    replace(expression, "-+", "-");
-    replace(expression, "--", "+");
-
-    return expression;
-}
-
-
-///Once its finsihed, replace write_expression_python()
-string NeuralNetwork::write_expression_python2() const{
+string NeuralNetwork::write_expression_python() const{
 
     vector<std::string> found_tokens;
     ostringstream buffer;
@@ -3636,17 +3507,34 @@ string NeuralNetwork::write_expression_python2() const{
     bool SoftPlus     = false;
     bool SoftSign     = false;
 
-    //Finish this text
     buffer << "\'\'\' " << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
     buffer << "artelnics@artelnics.com\t" << endl;
     buffer << "" << endl;
-    buffer << "Your model has been exported to this c file." << endl;
-    buffer << "You can manage it... \t" << endl;
-    buffer << "Example:" << endl;
+    buffer << "Your model has been exported to this python file." << endl;
+    buffer << "You can manage it with the main method where you \t" << endl;
+    buffer << "can change the values of your inputs. For example:" << endl;
     buffer << "" << endl;
-    buffer << "\tInputs Names: \t" << endl;
 
+    buffer << "if we want to add these 3 values (0.3, 2.5 and 1.8)" << endl;
+    buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
+    buffer << "main program has to look like this:" << endl;
+    buffer << "" << endl;
+    buffer << "def main ():" << endl;
+	buffer << "\t" << "#default_val = 3.1416" << endl;
+	buffer << "\t" << "inputs = [None]*3" << endl;
+    buffer << "\t" <<  "" << endl;
+	buffer << "\t" << "Id_1 = 0.3" << endl;
+    buffer << "\t" << "Id_1 = 2.5" << endl;
+    buffer << "\t" << "Id_1 = 1.8" << endl;
+	buffer << "\t" << "" << endl;
+    buffer << "\t" << "inputs[0] = Input_1" << endl;
+    buffer << "\t" << "inputs[1] = Input_2" << endl;
+	buffer << "\t" << "inputs[2] = Input_3" << endl;
+	buffer << "\t" << ". . ." << endl;
+    buffer << "\n" << endl;
+
+    buffer << "Inputs Names: \t" << endl;
     const Tensor<string, 1> inputs = get_inputs_names();
     const Tensor<string, 1> outputs = get_outputs_names();
 
@@ -3654,23 +3542,21 @@ string NeuralNetwork::write_expression_python2() const{
     {
         if (inputs[i] == "")
         {
-            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
-            //found_tokens.push_back("input_" + to_string(i));
+            buffer << "   " << to_string(i) + ") " << "input_" + to_string(i) << endl;
         }
         else
         {
-            buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
-            //found_tokens.push_back(inputs[i]);
+            buffer << "   " << to_string(i) + ") " << inputs[i] << endl;
         }
     }
 
+    buffer << "\n" << endl;
     buffer << "\'\'\' " << endl;
     buffer << "\n" << endl;
     buffer << "import math" << endl;
     buffer << "import numpy as np" << endl;
     buffer << "\n" << endl;
 
-    // Do stuff
     string expression = write_expression();
     vector<std::string> tokens;
     std::string token;
@@ -3683,7 +3569,6 @@ string NeuralNetwork::write_expression_python2() const{
         tokens.push_back(token);
     }
 
-    // Do more stuff
     std::string target_string0("Logistic");
     std::string target_string1("ReLU");
     std::string target_string2("Threshold");
@@ -3823,7 +3708,6 @@ string NeuralNetwork::write_expression_python2() const{
     }
 
     buffer << "" << endl;
-
     found_tokens.push_back("exp");
     found_tokens.push_back("tanh");
     string sufix = "np.";
@@ -3854,7 +3738,6 @@ string NeuralNetwork::write_expression_python2() const{
 
     buffer << "\n\t\t" << "return out;" << endl;
     buffer << "\n" << endl;
-
     buffer << "\t"   << "def main ():" << endl;
     buffer << "\t\t" << "default_val = 3.1416" << endl;
     buffer << "\t\t" << "inputs = [None]*" << to_string(inputs.size()) << "\n" << endl;
@@ -3876,7 +3759,6 @@ string NeuralNetwork::write_expression_python2() const{
     buffer << "" << endl;
     buffer << "\t\t" << "outputs = NeuralNetwork.calculate_outputs(inputs)" << endl;
     buffer << "" << endl;
-
     buffer << "\t\t" << "print(\"\\nThese are your outputs:\\n\")" << endl;
 
     for (int i = 0; i < outputs.dimension(0); i++)
@@ -3888,20 +3770,13 @@ string NeuralNetwork::write_expression_python2() const{
         else
         {
             buffer << "\t\t" << "print( \""<< "\\t " << outputs_names[i] << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
-
-            //buffer << "\t" << "print( \"" << outputs_names[i] << ":" << " %f \\n\", "<< "outputs[" << to_string(i) << "]" << ");" << endl;
         }
     }
 
     buffer << "\n" << "NeuralNetwork.main()" << endl;
-
-    //buffer << "\n\t" << "return 0;" << endl;
-    //buffer << "} \n" << endl;
-
     string out = buffer.str();
     return out;
 }
-
 
 
 /// Saves the mathematical expression represented by the neural network to a text file.

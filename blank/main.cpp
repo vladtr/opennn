@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
         //cout << nn.write_expression_api();
         //cout << "bye world" << endl;
 
-        string expression_py   = nn.write_expression_python2();
+        string expression_py   = nn.write_expression_python();
         cout << expression_py << endl;
 
     }
