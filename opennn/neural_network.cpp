@@ -3141,371 +3141,663 @@ string NeuralNetwork::write_expression() const
 
 string NeuralNetwork::write_expression_api() const
 {
+    vector<std::string> found_tokens;
+    ostringstream buffer;
+    bool logistic     = false;
+    bool ReLU         = false;
+    bool Threshold    = false;
+    bool SymThreshold = false;
+    bool ExpLinear    = false;
+    bool SExpLinear   = false;
+    bool HSigmoid     = false;
+    bool SoftPlus     = false;
+    bool SoftSign     = false;
+
+    buffer << "<!DOCTYPE html>" << endl;
+    buffer << "<!--" << endl;
+    buffer << "Artificial Intelligence Techniques SL\t" << endl;
+    buffer << "artelnics@artelnics.com\t" << endl;
+    buffer << "" << endl;
+    buffer << "Your model has been exported to this php file." << endl;
+    buffer << "You can manage it writting your parameters in the url of your browser.\t" << endl;
+    buffer << "Example:" << endl;
+    buffer << "" << endl;
+    buffer << "\turl = http://localhost/API_example/\t" << endl;
+    buffer << "\tparameters in the url = http://localhost/API_example/?num=5&num=2&...\t" << endl;
+    buffer << "\tTo see the ouput refresh the page" << endl;
+    buffer << "" << endl;
+    buffer << "\tInputs Names: \t" << endl;
+
+    const Tensor<string, 1> inputs = get_inputs_names();
+    const Tensor<string, 1> outputs = get_outputs_names();
+
+    for (int i = 0; i < inputs.dimension(0); i++)
     {
-        vector<std::string> found_tokens;
-        ostringstream buffer;
-        bool logistic     = false;
-        bool ReLU         = false;
-        bool Threshold    = false;
-        bool SymThreshold = false;
-        bool ExpLinear    = false;
-        bool SExpLinear   = false;
-        bool HSigmoid     = false;
-        bool SoftPlus     = false;
-        bool SoftSign     = false;
-
-        buffer << "<!DOCTYPE html>" << endl;
-        buffer << "<!--" << endl;
-        buffer << "Artificial Intelligence Techniques SL\t" << endl;
-        buffer << "artelnics@artelnics.com\t" << endl;
-        buffer << "" << endl;
-        buffer << "Your model has been exported to this php file." << endl;
-        buffer << "You can manage it writting your parameters in the url of your browser.\t" << endl;
-        buffer << "Example:" << endl;
-        buffer << "" << endl;
-        buffer << "\turl = http://localhost/API_example/\t" << endl;
-        buffer << "\tparameters in the url = http://localhost/API_example/?num=5&num=2&...\t" << endl;
-        buffer << "\tTo see the ouput refresh the page" << endl;
-        buffer << "" << endl;
-        buffer << "\tInputs Names: \t" << endl;
-
-        const Tensor<string, 1> inputs = get_inputs_names();
-        const Tensor<string, 1> outputs = get_outputs_names();
-
-        for (int i = 0; i < inputs.dimension(0); i++)
+        if (inputs[i] == "")
         {
-            if (inputs[i] == "")
-            {
-                buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
-                found_tokens.push_back("input_" + to_string(i));
-            }
-            else
-            {
-                buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
-                found_tokens.push_back(inputs[i]);
-            }
+            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
+            found_tokens.push_back("input_" + to_string(i));
         }
+        else
+        {
+            buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
+            found_tokens.push_back(inputs[i]);
+        }
+    }
 
-        buffer << "" << endl;
-        buffer << "-->\t" << endl;
+    buffer << "" << endl;
+    buffer << "-->\t" << endl;
 
-        buffer << "" << endl;
-        buffer << "<html lang = \"en\">\n" << endl;
-        buffer << "<head>\n" << endl;
-        buffer << "<title>Rest API Client Side Demo</title>\n " << endl;
-        buffer << "<meta charset = \"utf-8\">" << endl;
-        buffer << "<meta name = \"viewport\" content = \"width=device-width, initial-scale=1\">" << endl;
-        buffer << "<link rel = \"stylesheet\" href = \"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">" << endl;
-        buffer << "<script src = \"https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js\"></script>" << endl;
-        buffer << "<script src = \"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>" << endl;
-        buffer << "</head>" << endl;
-        buffer << "<body>" << endl;
-        buffer << "<div class = \"container\">" << endl;
-        buffer << "<br></br>" << endl;
-        buffer << "<div class = \"form-group\">" << endl;
-        buffer << "<p>" << endl;
-        buffer << "follow the steps defined in the \"index.php\" file" << endl;
-        buffer << "</p>" << endl;
-        buffer << "<p>" << endl;
-        buffer << "Refresh the page to see the prediction" << endl;
-        buffer << "</p>" << endl;
-        buffer << "</div>" << endl;
-        buffer << "<h4>" << endl;
+    buffer << "" << endl;
+    buffer << "<html lang = \"en\">\n" << endl;
+    buffer << "<head>\n" << endl;
+    buffer << "<title>Rest API Client Side Demo</title>\n " << endl;
+    buffer << "<meta charset = \"utf-8\">" << endl;
+    buffer << "<meta name = \"viewport\" content = \"width=device-width, initial-scale=1\">" << endl;
+    buffer << "<link rel = \"stylesheet\" href = \"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\">" << endl;
+    buffer << "<script src = \"https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js\"></script>" << endl;
+    buffer << "<script src = \"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\"></script>" << endl;
+    buffer << "</head>" << endl;
+    buffer << "<body>" << endl;
+    buffer << "<div class = \"container\">" << endl;
+    buffer << "<br></br>" << endl;
+    buffer << "<div class = \"form-group\">" << endl;
+    buffer << "<p>" << endl;
+    buffer << "follow the steps defined in the \"index.php\" file" << endl;
+    buffer << "</p>" << endl;
+    buffer << "<p>" << endl;
+    buffer << "Refresh the page to see the prediction" << endl;
+    buffer << "</p>" << endl;
+    buffer << "</div>" << endl;
+    buffer << "<h4>" << endl;
 
+    buffer << "<?php" << endl;
+    buffer << "session_start();" << endl;
+    buffer << "if (isset($_SESSION['lastpage']) && $_SESSION['lastpage'] == __FILE__) { " << endl;
+    buffer << "if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') " << endl;
+    buffer << "\t$url = \"https://\"; " << endl;
+    buffer << "else" << endl;
+    buffer << "\t$url = \"http://\"; " << endl;
+
+    buffer << "\n" << endl;
+
+    buffer << "$url.= $_SERVER['HTTP_HOST'];" << endl;
+    buffer << "$url.= $_SERVER['REQUEST_URI'];" << endl;
+    buffer << "$url_components = parse_url($url);" << endl;
+    buffer << "parse_str($url_components['query'], $params);" << endl;
+
+    buffer << "\n" << endl;
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        string param ="";
+        string param_index ="";
+        param = "$num" + to_string(i);
+        param_index= "num" + to_string(i);
+
+        if (inputs[i] == "")
+        {
+            buffer << param << " = " << "$params['" + param_index << "'];" << endl;
+            buffer << "$input_" + to_string(i) << " = intval(" << param << ");" << endl;
+        }
+        else
+        {
+            buffer << param << " = " << "$params['" + param_index << "'];" << endl;
+            buffer << "$" << inputs[i] << " = intval(" << param << ");" << endl;
+        }
+    }
+
+    buffer << "if(" << endl;
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (i != inputs.dimension(0)-1)
+        {
+            buffer << "is_numeric(" << "$" << "num" + to_string(i) << ") &&" << endl;
+        }
+        else
+        {
+            buffer << "is_numeric(" << "$" << "num" + to_string(i) << ") )" << endl;
+        }
+    }
+
+    buffer << "{" << endl;
+    buffer << "$status=200;" << endl;
+    buffer << "$status_msg = 'valid parameters';" << endl;
+    buffer << "}" << endl;
+    buffer << "else" << endl;
+    buffer << "{" << endl;
+    buffer << "$status =400;" << endl;
+    buffer << "$status_msg = 'invalid parameters';" << endl;
+    buffer << "}"   << endl;
+    buffer << "\n" << endl;
+
+    string expression = write_expression();
+    string phpVAR = "$";
+    vector<std::string> tokens;
+    std::string token;
+    std::stringstream ss(expression);
+
+    while (getline(ss, token, '\n'))
+    {
+        if (token.size() > 1 && token.back() == '{'){ break; }
+        if (token.size() > 1 && token.back() != ';'){ token += ';'; }
+        tokens.push_back(token);
+    }
+
+    for (auto& s : tokens)
+    {
+        string word = "";
+        for (char& c : s)
+        {
+            if ( c!=' ' && c!='=' ){ word += c; }
+            else { break; }
+        }
+        if (word.size() > 1)
+        {
+            found_tokens.push_back(word);
+        }
+    }
+
+    std::string target_string0("Logistic");
+    std::string target_string1("ReLU");
+    std::string target_string2("Threshold");
+    std::string target_string3("SymmetricThreshold");
+    std::string target_string4("ExponentialLinear");
+    std::string target_string5("ScaledExponentialLinear");
+    std::string target_string6("HardSigmoid");
+    std::string target_string7("SoftPlus");
+    std::string target_string8("SoftSign");
+
+    for (auto& t:tokens)
+    {
+        size_t substring_length0 = t.find(target_string0);
+        size_t substring_length1 = t.find(target_string1);
+        size_t substring_length2 = t.find(target_string2);
+        size_t substring_length3 = t.find(target_string3);
+        size_t substring_length4 = t.find(target_string4);
+        size_t substring_length5 = t.find(target_string5);
+        size_t substring_length6 = t.find(target_string6);
+        size_t substring_length7 = t.find(target_string7);
+        size_t substring_length8 = t.find(target_string8);
+
+        if (substring_length0 < t.size() && substring_length0!=0){ logistic = true; }
+        if (substring_length1 < t.size() && substring_length1!=0){ ReLU = true; }
+        if (substring_length2 < t.size() && substring_length2!=0){ Threshold = true; }
+        if (substring_length3 < t.size() && substring_length3!=0){ SymThreshold = true; }
+        if (substring_length4 < t.size() && substring_length4!=0){ ExpLinear = true; }
+        if (substring_length5 < t.size() && substring_length5!=0){ SExpLinear = true; }
+        if (substring_length6 < t.size() && substring_length6!=0){ HSigmoid = true; }
+        if (substring_length7 < t.size() && substring_length7!=0){ SoftPlus = true; }
+        if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
+
+
+        for (auto& key_word : found_tokens)
+        {
+            string new_word = "";
+            new_word = phpVAR + key_word;
+            replace_all_appearances(t, key_word, new_word);
+        }
+        buffer << t << endl;
+    }
+
+    buffer << "if ($status === 200){" << endl;
+    buffer << "$response = ['status' => $status,  'status_message' => $status_msg" << endl;
+
+    for (int i = 0; i < outputs.dimension(0); i++)
+    {
+        if (outputs[i] == "")
+        {
+            buffer << ", 'output" << to_string(i) + "' => " << "$out" + to_string(i) << endl;
+        }
+        else
+        {
+            buffer << ", '" << outputs_names[i] << "' => " << "$" << outputs[i] << endl;
+        }
+    }
+
+    buffer << "];" << endl;
+    buffer << "}" << endl;
+    buffer << "else" << endl;
+    buffer << "{" << endl;
+    buffer << "$response = ['status' => $status,  'status_message' => $status_msg" << "];" << endl;
+    buffer << "}" << endl;
+    buffer << "\n" << endl;
+
+    buffer << "$json_response_pretty = json_encode($response, JSON_PRETTY_PRINT);" << endl;
+    buffer << "echo nl2br(\"\\n\" . $json_response_pretty . \"\\n\");" << endl;
+    buffer << "}else{" << endl;
+    buffer << "echo \"New page\";" << endl;
+    buffer << "}" << endl;
+    buffer << "$_SESSION['lastpage'] = __FILE__;" << endl;
+    buffer << "?>" << endl;
+    buffer << "\n" << endl;
+
+    if(logistic)
+    {
         buffer << "<?php" << endl;
-        buffer << "session_start();" << endl;
-        buffer << "if (isset($_SESSION['lastpage']) && $_SESSION['lastpage'] == __FILE__) { " << endl;
-        buffer << "if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') " << endl;
-        buffer << "\t$url = \"https://\"; " << endl;
-        buffer << "else" << endl;
-        buffer << "\t$url = \"http://\"; " << endl;
-
-        buffer << "\n" << endl;
-
-        buffer << "$url.= $_SERVER['HTTP_HOST'];" << endl;
-        buffer << "$url.= $_SERVER['REQUEST_URI'];" << endl;
-        buffer << "$url_components = parse_url($url);" << endl;
-        buffer << "parse_str($url_components['query'], $params);" << endl;
-
-        buffer << "\n" << endl;
-
-        for (int i = 0; i < inputs.dimension(0); i++)
-        {
-            string param ="";
-            string param_index ="";
-            param = "$num" + to_string(i);
-            param_index= "num" + to_string(i);
-
-            if (inputs[i] == "")
-            {
-                buffer << param << " = " << "$params['" + param_index << "'];" << endl;
-                buffer << "$input_" + to_string(i) << " = intval(" << param << ");" << endl;
-            }
-            else
-            {
-                buffer << param << " = " << "$params['" + param_index << "'];" << endl;
-                buffer << "$" << inputs[i] << " = intval(" << param << ");" << endl;
-            }
-        }
-
-        buffer << "if(" << endl;
-        for (int i = 0; i < inputs.dimension(0); i++)
-        {
-            if (i != inputs.dimension(0)-1)
-            {
-                buffer << "is_numeric(" << "$" << "num" + to_string(i) << ") &&" << endl;
-            }
-            else
-            {
-                buffer << "is_numeric(" << "$" << "num" + to_string(i) << ") )" << endl;
-            }
-        }
-
-        buffer << "{" << endl;
-        buffer << "$status=200;" << endl;
-        buffer << "$status_msg = 'valid parameters';" << endl;
+        buffer << "function Logistic(int $x) {" << endl;
+        buffer << "$z = 1/(1+exp(-$x));" << endl;
+        buffer << "return $z;" << endl;
         buffer << "}" << endl;
-        buffer << "else" << endl;
-        buffer << "{" << endl;
-        buffer << "$status =400;" << endl;
-        buffer << "$status_msg = 'invalid parameters';" << endl;
-        buffer << "}"   << endl;
-        buffer << "\n" << endl;
-
-        string expression = write_expression();
-        string phpVAR = "$";
-        vector<std::string> tokens;
-        std::string token;
-        std::stringstream ss(expression);
-
-        while (getline(ss, token, '\n'))
-        {
-            if (token.size() > 1 && token.back() == '{'){ break; }
-            if (token.size() > 1 && token.back() != ';'){ token += ';'; }
-            tokens.push_back(token);
-        }
-
-        for (auto& s : tokens)
-        {
-            string word = "";
-            for (char& c : s)
-            {
-                if ( c!=' ' && c!='=' ){ word += c; }
-                else { break; }
-            }
-            if (word.size() > 1)
-            {
-                found_tokens.push_back(word);
-            }
-        }
-
-        std::string target_string0("Logistic");
-        std::string target_string1("ReLU");
-        std::string target_string2("Threshold");
-        std::string target_string3("SymmetricThreshold");
-        std::string target_string4("ExponentialLinear");
-        std::string target_string5("ScaledExponentialLinear");
-        std::string target_string6("HardSigmoid");
-        std::string target_string7("SoftPlus");
-        std::string target_string8("SoftSign");
-
-        for (auto& t:tokens)
-        {
-            size_t substring_length0 = t.find(target_string0);
-            size_t substring_length1 = t.find(target_string1);
-            size_t substring_length2 = t.find(target_string2);
-            size_t substring_length3 = t.find(target_string3);
-            size_t substring_length4 = t.find(target_string4);
-            size_t substring_length5 = t.find(target_string5);
-            size_t substring_length6 = t.find(target_string6);
-            size_t substring_length7 = t.find(target_string7);
-            size_t substring_length8 = t.find(target_string8);
-
-            if (substring_length0 < t.size() && substring_length0!=0){ logistic = true; }
-            if (substring_length1 < t.size() && substring_length1!=0){ ReLU = true; }
-            if (substring_length2 < t.size() && substring_length2!=0){ Threshold = true; }
-            if (substring_length3 < t.size() && substring_length3!=0){ SymThreshold = true; }
-            if (substring_length4 < t.size() && substring_length4!=0){ ExpLinear = true; }
-            if (substring_length5 < t.size() && substring_length5!=0){ SExpLinear = true; }
-            if (substring_length6 < t.size() && substring_length6!=0){ HSigmoid = true; }
-            if (substring_length7 < t.size() && substring_length7!=0){ SoftPlus = true; }
-            if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
-
-
-            for (auto& key_word : found_tokens)
-            {
-                string new_word = "";
-                new_word = phpVAR + key_word;
-                replace_all_appearances(t, key_word, new_word);
-            }
-            buffer << t << endl;
-        }
-
-        buffer << "if ($status === 200){" << endl;
-        buffer << "$response = ['status' => $status,  'status_message' => $status_msg" << endl;
-
-        for (int i = 0; i < outputs.dimension(0); i++)
-        {
-            if (outputs[i] == "")
-            {
-                buffer << ", 'output" << to_string(i) + "' => " << "$out" + to_string(i) << endl;
-            }
-            else
-            {
-                buffer << ", '" << outputs_names[i] << "' => " << "$" << outputs[i] << endl;
-            }
-        }
-
-        buffer << "];" << endl;
-        buffer << "}" << endl;
-        buffer << "else" << endl;
-        buffer << "{" << endl;
-        buffer << "$response = ['status' => $status,  'status_message' => $status_msg" << "];" << endl;
-        buffer << "}" << endl;
-        buffer << "\n" << endl;
-
-        buffer << "$json_response_pretty = json_encode($response, JSON_PRETTY_PRINT);" << endl;
-        buffer << "echo nl2br(\"\\n\" . $json_response_pretty . \"\\n\");" << endl;
-        buffer << "}else{" << endl;
-        buffer << "echo \"New page\";" << endl;
-        buffer << "}" << endl;
-        buffer << "$_SESSION['lastpage'] = __FILE__;" << endl;
         buffer << "?>" << endl;
         buffer << "\n" << endl;
-
-        if(logistic)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function Logistic(int $x) {" << endl;
-            buffer << "$z = 1/(1+exp(-$x));" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(ReLU)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function ReLU(int $x) {" << endl;
-            buffer << "$z = max(0, $x);" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(Threshold)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function Threshold(int $x) {" << endl;
-            buffer << "if ($x < 0) {" << endl;
-            buffer << "$z = 0;" << endl;
-            buffer << "}else{" << endl;
-            buffer << "$z=1;" << endl;
-            buffer << "}" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(SymThreshold)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function SymmetricThreshold(int $x) {" << endl;
-            buffer << "if ($x < 0) {" << endl;
-            buffer << "$z = -1;" << endl;
-            buffer << "}else{" << endl;
-            buffer << "$z=1;" << endl;
-            buffer << "}" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(ExpLinear)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function ExponentialLinear(int $x) {" << endl;
-            buffer << "$alpha = 1.6732632423543772848170429916717;" << endl;
-            buffer << "if ($x>0){" << endl;
-            buffer << "$z=$x;" << endl;
-            buffer << "}else{" << endl;
-            buffer << "$z=$alpha*(exp($x)-1);" << endl;
-            buffer << "}" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(SExpLinear)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function ScaledExponentialLinear(int $x) {" << endl;
-            buffer << "$alpha  = 1.67326;" << endl;
-            buffer << "$lambda = 1.05070;" << endl;
-            buffer << "if ($x>0){" << endl;
-            buffer << "$z=$lambda*$x;" << endl;
-            buffer << "}else{" << endl;
-            buffer << "$z=$lambda*$alpha*(exp($x)-1);" << endl;
-            buffer << "}" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(HSigmoid)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function HardSigmoid(int $x) {" << endl;
-            buffer << "$z=1/(1+exp(-$x));" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(SoftPlus)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function SoftPlus(int $x) {" << endl;
-            buffer << "$z=log(1+exp($x));" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        if(SoftSign)
-        {
-            buffer << "<?php" << endl;
-            buffer << "function SoftSign(int $x) {" << endl;
-            buffer << "$z=$x/(1+abs($x));" << endl;
-            buffer << "return $z;" << endl;
-            buffer << "}" << endl;
-            buffer << "?>" << endl;
-            buffer << "\n" << endl;
-        }
-
-        buffer << "</h4>" << endl;
-        buffer << "</div>" << endl;
-        buffer << "</body>" << endl;
-        buffer << "</html>" << endl;
-
-        string out = buffer.str();
-        replace_all_appearances(out, "$$", "$");
-        return out;
     }
+
+    if(ReLU)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function ReLU(int $x) {" << endl;
+        buffer << "$z = max(0, $x);" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(Threshold)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function Threshold(int $x) {" << endl;
+        buffer << "if ($x < 0) {" << endl;
+        buffer << "$z = 0;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "$z=1;" << endl;
+        buffer << "}" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SymThreshold)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function SymmetricThreshold(int $x) {" << endl;
+        buffer << "if ($x < 0) {" << endl;
+        buffer << "$z = -1;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "$z=1;" << endl;
+        buffer << "}" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(ExpLinear)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function ExponentialLinear(int $x) {" << endl;
+        buffer << "$alpha = 1.6732632423543772848170429916717;" << endl;
+        buffer << "if ($x>0){" << endl;
+        buffer << "$z=$x;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "$z=$alpha*(exp($x)-1);" << endl;
+        buffer << "}" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SExpLinear)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function ScaledExponentialLinear(int $x) {" << endl;
+        buffer << "$alpha  = 1.67326;" << endl;
+        buffer << "$lambda = 1.05070;" << endl;
+        buffer << "if ($x>0){" << endl;
+        buffer << "$z=$lambda*$x;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "$z=$lambda*$alpha*(exp($x)-1);" << endl;
+        buffer << "}" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(HSigmoid)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function HardSigmoid(int $x) {" << endl;
+        buffer << "$z=1/(1+exp(-$x));" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SoftPlus)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function SoftPlus(int $x) {" << endl;
+        buffer << "$z=log(1+exp($x));" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SoftSign)
+    {
+        buffer << "<?php" << endl;
+        buffer << "function SoftSign(int $x) {" << endl;
+        buffer << "$z=$x/(1+abs($x));" << endl;
+        buffer << "return $z;" << endl;
+        buffer << "}" << endl;
+        buffer << "?>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    buffer << "</h4>" << endl;
+    buffer << "</div>" << endl;
+    buffer << "</body>" << endl;
+    buffer << "</html>" << endl;
+
+    string out = buffer.str();
+    replace_all_appearances(out, "$$", "$");
+    return out;
+
 }
 
 
 /// Returns a string with the javaScript function of the expression represented by the neural network.
 
 string NeuralNetwork::write_expression_javascript() const{
+
+    vector<std::string> found_tokens;
+    ostringstream buffer;
+
+    bool logistic     = false;
+    bool ReLU         = false;
+    bool Threshold    = false;
+    bool SymThreshold = false;
+    bool ExpLinear    = false;
+    bool SExpLinear   = false;
+    bool HSigmoid     = false;
+    bool SoftPlus     = false;
+    bool SoftSign     = false;
+
+
+    //CHANGE THIS TEXT
+
+    buffer << "/*" << endl;
+    buffer << "Artificial Intelligence Techniques SL\t" << endl;
+    buffer << "artelnics@artelnics.com\t" << endl;
+    buffer << "" << endl;
+    buffer << "Your model has been exported to this JavaScript file." << endl;
+    buffer << "You can manage it with the main method, where you \t" << endl;
+    buffer << "can change the values of your inputs. For example:" << endl;
+    buffer << "" << endl;
+
+    //CHANGE THIS TEXT
+
+    buffer << "if we want to add these 3 values (0.3, 2.5 and 1.8)" << endl;
+    buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
+    buffer << "main program has to look like this:" << endl;
+    buffer << "\t" << endl;
+    buffer << "int main(){ " << endl;
+	buffer << "\t" << "vector<float> inputs(3);"<< endl;
+    buffer << "\t" << endl;
+	buffer << "\t" << "const float asdas  = 0.3;" << endl;
+	buffer << "\t" << "inputs[0] = asdas;"        << endl;
+	buffer << "\t" << "const float input2 = 2.5;" << endl;
+	buffer << "\t" << "inputs[1] = input2;"       << endl;
+	buffer << "\t" << "const float input3 = 1.8;" << endl;
+	buffer << "\t" << "inputs[2] = input3;"       << endl;
+	buffer << "\t" << ". . ." << endl;
+    buffer << "\n" << endl;
+
+    buffer << "Inputs Names:" <<endl;
+
+    const Tensor<string, 1> inputs = get_inputs_names();
+    const Tensor<string, 1> outputs = get_outputs_names();
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (inputs[i] == "")
+        {
+            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
+        }
+        else
+        {
+            buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
+        }
+    }
+
+    buffer << "*/" << endl;
+    buffer << "\n" << endl;
+
+    //======CODE STARTS HERE ========//
+    
+    buffer << "function main()" << endl;
+    buffer << "{" << endl;
+    buffer << "\t" << "var inputs = [];" << endl;
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (inputs[i] == "")
+        {
+            buffer << "\t" << "var " << "input_" << to_string(i) <<" =" << " /*enter your value here*/; " << endl;
+            buffer << "\t" << "inputs.push(" << "input_" << to_string(i) << ");" << endl;
+        }
+        else
+        {
+            buffer << "\t" << "var " << inputs[i] << " =" << " /*enter your value here*/; " << endl;
+            buffer << "\t" << "inputs.push(" << inputs[i] << ");" << endl;
+        }
+    }
+
+    buffer << "\t" << "	var outputs = calculate_outputs(inputs); " << endl;
+    
+    //FOR LOOP FOR PRINTINGG THE OUTPUTS (TAKE IT FROM PYTHON)
+    buffer << "}" << endl;
+    
+    ///============CALCULATE OUTPUT FUNCTION============///
+
+    string expression = write_expression();
+    vector<std::string> tokens;
+    std::string token;
+    std::stringstream ss(expression);
+
+    while (getline(ss, token, '\n'))
+    {
+        if (token.size() > 1 && token.back() == '{'){ break; }
+        if (token.size() > 1 && token.back() != ';'){ token += ';'; }
+        tokens.push_back(token);
+    }
+
+    buffer << "function calculate_outputs(inputs)" << endl;
+    buffer << "{" << endl;
+
+    for (int i = 0; i < inputs.dimension(0); i++)
+    {
+        if (inputs[i] == "")
+        {
+            buffer << "\t" << "var " << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "];" << endl;
+        }
+        else
+        {
+            buffer << "\t" << "var " << inputs[i] << " = " << "inputs[" << to_string(i) << "];" << endl;
+        }
+    }
+
+    buffer << "" << endl;
+    
+    std::string target_string0("Logistic");
+    std::string target_string1("ReLU");
+    std::string target_string2("Threshold");
+    std::string target_string3("SymmetricThreshold");
+    std::string target_string4("ExponentialLinear");
+    std::string target_string5("ScaledExponentialLinear");
+    std::string target_string6("HardSigmoid");
+    std::string target_string7("SoftPlus");
+    std::string target_string8("SoftSign");
+
+    found_tokens.push_back("exp");
+    found_tokens.push_back("tanh");
+    string sufix = "Math.";
+    
+    for (auto& t:tokens)
+    {
+
+        size_t substring_length0 = t.find(target_string0);
+        size_t substring_length1 = t.find(target_string1);
+        size_t substring_length2 = t.find(target_string2);
+        size_t substring_length3 = t.find(target_string3);
+        size_t substring_length4 = t.find(target_string4);
+        size_t substring_length5 = t.find(target_string5);
+        size_t substring_length6 = t.find(target_string6);
+        size_t substring_length7 = t.find(target_string7);
+        size_t substring_length8 = t.find(target_string8);
+
+        if (substring_length0 < t.size() && substring_length0!=0){ logistic = true; }
+        if (substring_length1 < t.size() && substring_length1!=0){ ReLU = true; }
+        if (substring_length2 < t.size() && substring_length2!=0){ Threshold = true; }
+        if (substring_length3 < t.size() && substring_length3!=0){ SymThreshold = true; }
+        if (substring_length4 < t.size() && substring_length4!=0){ ExpLinear = true; }
+        if (substring_length5 < t.size() && substring_length5!=0){ SExpLinear = true; }
+        if (substring_length6 < t.size() && substring_length6!=0){ HSigmoid = true; }
+        if (substring_length7 < t.size() && substring_length7!=0){ SoftPlus = true; }
+        if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
+
+        for (auto& key_word : found_tokens)
+        {
+            string new_word = "";
+            new_word = sufix + key_word;
+            replace_all_appearances(t, key_word, new_word);
+        }
+
+        if (t.size()<=1)
+        {
+            buffer << "" << endl;
+        }
+        else
+        {
+            buffer << "\t" << "var " << t << endl;
+        }
+    }
+
+    buffer << "\t" << "var out = new Object();" << endl;
+
+    for (int i = 0; i < outputs.dimension(0); i++)
+    {
+        if (outputs[i] == "")
+        {
+            buffer << "\t" << "out.push(output" << to_string(i) << ");"<< endl;
+        }
+        else
+        {
+            buffer << "\t" << "out.push(" << outputs[i] << ");" << endl;
+        }
+    }
+    
+    buffer << "\n\t" << "return out;" << endl;
+    buffer << "}"  << endl;
+
+    if(logistic)
+    {
+        buffer << "function Logistic(x) {" << endl;
+        buffer << "var z = 1/(1+exp(x));" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(ReLU)
+    {
+        buffer << "function ReLU(x) {" << endl;
+        buffer << "var z = max(0, x);" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(Threshold)
+    {
+        buffer << "function Threshold(x) {" << endl;
+        buffer << "if (x < 0) {" << endl;
+        buffer << "var z = 0;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "var z = 1;" << endl;
+        buffer << "}" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SymThreshold)
+    {
+        buffer << "function SymmetricThreshold(x) {" << endl;
+        buffer << "if (x < 0) {" << endl;
+        buffer << "var z = -1;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "var z=1;" << endl;
+        buffer << "}" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(ExpLinear)
+    {
+        buffer << "function ExponentialLinear(x) {" << endl;
+        buffer << "var alpha = 1.67326;" << endl;
+        buffer << "if (x>0){" << endl;
+        buffer << "var z = x;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "var z = alpha*(exp(x)-1);" << endl;
+        buffer << "}" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SExpLinear)
+    {
+        buffer << "function ScaledExponentialLinear(x) {" << endl;
+        buffer << "var alpha  = 1.67326;" << endl;
+        buffer << "var lambda = 1.05070;" << endl;
+        buffer << "if (x>0){" << endl;
+        buffer << "var z = lambda*x;" << endl;
+        buffer << "}else{" << endl;
+        buffer << "var z = lambda*alpha*(exp(x)-1);" << endl;
+        buffer << "}" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(HSigmoid)
+    {
+        buffer << "function HardSigmoid(x) {" << endl;
+        buffer << "var z=1/(1+exp(-x));" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SoftPlus)
+    {
+        buffer << "function SoftPlus(int x) {" << endl;
+        buffer << "var z=log(1+exp(x));" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    if(SoftSign)
+    {
+        buffer << "function SoftSign(x) {" << endl;
+        buffer << "var z=x/(1+abs(x));" << endl;
+        buffer << "return z;" << endl;
+        buffer << "}" << endl;
+        buffer << "\n" << endl;
+    }
+
+    string out = buffer.str();
+    return out;
 
 }
 
