@@ -425,7 +425,7 @@ int main()
         tests_failed_count += response_optimization_test.get_tests_failed_count();
       }
 
-      else if(test == "suite" || test == "")
+      else if(test == "suite" || test.empty())
       {
           // numerical differentiation
 

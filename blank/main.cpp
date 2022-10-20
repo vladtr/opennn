@@ -44,7 +44,6 @@ int main(int argc, char* argv[])
         //                                                       //
         //=======================================================//
 
-
         //=======================//
         //       TEST 0          //
         //=======================//
@@ -102,49 +101,49 @@ int main(int argc, char* argv[])
 
         ///THREE INPUTS AND TWO OUTPUTS TEST
         //                                          ({inputs_number, hidden_neurons_number, outputs_number}).
-        NeuralNetwork nn(NeuralNetwork::ProjectType::Forecasting, {4, 6, 3});
-        Eigen::Tensor<string, 1> t2(4);
-        t2(0) = "asdas";
-        t2(1) = "input2";
-        t2(2) = "input3";
-        t2(3) = "inputasd";
+        //NeuralNetwork nn(NeuralNetwork::ProjectType::Forecasting, {4, 6, 3});
+        //Eigen::Tensor<string, 1> t2(4);
+        //t2(0) = "asdas";
+        //t2(1) = "input2";
+        //t2(2) = "input3";
+        //t2(3) = "inputasd";
 
-        Eigen::Tensor<string, 1> t(3);
-        t(0) = "output1";
-        t(1) = "output2";
-        t(2) = "outpusadk2";
+        //Eigen::Tensor<string, 1> t(3);
+        //t(0) = "output1";
+        //t(1) = "output2";
+        //t(2) = "outpusadk2";
 
-        nn.set_inputs_names(t2);
-        nn.set_outputs_names(t);
+        //nn.set_inputs_names(t2);
+        //nn.set_outputs_names(t);
 
-        string expression_api = nn.write_expression_javascript();
-        cout << expression_api << endl;
+        //string expression_api = nn.write_expression_javascript();
+        //cout << expression_api << endl;
 
 
         //=======================//
         //       TEST 3          //
         //=======================//
 
-        //NeuralNetwork nn;
+        NeuralNetwork nn;
         //
-        //LongShortTermMemoryLayer lstm (1,1);
-        //lstm.set_activation_function("Logistic");
-        //nn.add_layer(&lstm);
-        //
-        //Eigen::Tensor<string, 1> t2(1);
-        //t2(0) = "Id_1";
-        //Eigen::Tensor<string, 1> t(1);
-        //t(0) = "output1";
-        //nn.set_inputs_names(t2);
-        //nn.set_outputs_names(t);
-        //
+        LongShortTermMemoryLayer lstm (1,1);
+        lstm.set_activation_function("Logistic");
+        nn.add_layer(&lstm);
+
+        Eigen::Tensor<string, 1> t2(1);
+        t2(0) = "Id_1";
+        Eigen::Tensor<string, 1> t(1);
+        t(0) = "output1";
+        nn.set_inputs_names(t2);
+        nn.set_outputs_names(t);
+
         ////nn.print();
-        //
-        ////cout << nn.write_expression_api();
+
+        //cout << nn.write_expression_api();
         ////cout << "bye world" << endl;
-        //
-        //string expression_py   = nn.write_expression_c();
-        //cout << expression_py << endl;
+
+        string expression_py   = nn.write_expression_javascript();
+        cout << expression_py << endl;
 
     }
     catch (const exception& e)

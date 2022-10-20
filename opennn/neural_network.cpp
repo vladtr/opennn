@@ -2826,7 +2826,7 @@ string NeuralNetwork::write_expression_c() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
             //found_tokens.push_back("input_" + to_string(i));
@@ -3002,7 +3002,7 @@ string NeuralNetwork::write_expression_c() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << "const float " << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "];" << endl;
         }
@@ -3029,7 +3029,7 @@ string NeuralNetwork::write_expression_c() const{
     buffer << "\t" << "vector<float> out(" << outputs.size() << ");" << endl;
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i] == "")
+        if (outputs[i].empty())
         {
             buffer << "\t" << "out[" << to_string(i) << "] = " << "output" << to_string(i) << ";"<< endl;
         }
@@ -3048,7 +3048,7 @@ string NeuralNetwork::write_expression_c() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << "const float " << "input_" << to_string(i) <<" =" << " /*enter your value here*/; " << endl;
             buffer << "\t" << "inputs[" << to_string(i) << "] = " << "input_" << to_string(i) << ";" << endl;
@@ -3069,7 +3069,7 @@ string NeuralNetwork::write_expression_c() const{
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i] == "")
+        if (outputs[i].empty())
         {
             buffer << "\t" << "printf( \"output" << to_string(i) << ":" << " %f \\n\", "<< "outputs[" << to_string(i) << "]" << ");" << endl;
         }
@@ -3173,7 +3173,7 @@ string NeuralNetwork::write_expression_api() const
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
             found_tokens.push_back("input_" + to_string(i));
@@ -3235,7 +3235,7 @@ string NeuralNetwork::write_expression_api() const
         param = "$num" + to_string(i);
         param_index= "num" + to_string(i);
 
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << param << " = " << "$params['" + param_index << "'];" << endl;
             buffer << "$input_" + to_string(i) << " = intval(" << param << ");" << endl;
@@ -3345,7 +3345,7 @@ string NeuralNetwork::write_expression_api() const
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i] == "")
+        if (outputs[i].empty())
         {
             buffer << ", 'output" << to_string(i) + "' => " << "$out" + to_string(i) << endl;
         }
@@ -3556,7 +3556,7 @@ string NeuralNetwork::write_expression_javascript() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
         }
@@ -3570,14 +3570,15 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "\n" << endl;
 
     //======CODE STARTS HERE ========//
-    
+    buffer << "main()" << endl;
+    buffer << "" << endl;
     buffer << "function main()" << endl;
     buffer << "{" << endl;
     buffer << "\t" << "var inputs = [];" << endl;
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << "var " << "input_" << to_string(i) <<" =" << " /*enter your value here*/; " << endl;
             buffer << "\t" << "inputs.push(" << "input_" << to_string(i) << ");" << endl;
@@ -3589,10 +3590,23 @@ string NeuralNetwork::write_expression_javascript() const{
         }
     }
 
-    buffer << "\t" << "	var outputs = calculate_outputs(inputs); " << endl;
-    
-    //FOR LOOP FOR PRINTINGG THE OUTPUTS (TAKE IT FROM PYTHON)
-    buffer << "}" << endl;
+    buffer << "\n\t" << "var outputs = calculate_outputs(inputs); " << endl;
+    buffer << "\t" << "console.log(\"\\nThese are your outputs:\")" << "\n" << endl;
+
+    for (int i = 0; i < outputs.dimension(0); i++)
+    {
+        if (outputs[i].empty())
+        {
+            buffer << "\t" << "console.log(\"\\n \noutput" << to_string(i) << ":\");" << endl;
+            buffer << "\tconsole.log( outputs[" << to_string(i) << "] );" << "\n" << endl;
+        }
+        else
+        {
+            buffer << "\t" << "console.log(\"\\n "<< outputs_names[i] << ":\");" << endl;
+            buffer << "\tconsole.log( outputs[" << to_string(i) << "] );" << "\n" << endl;
+        }
+    }
+    buffer << "}" << "\n" << endl;
     
     ///============CALCULATE OUTPUT FUNCTION============///
 
@@ -3613,7 +3627,7 @@ string NeuralNetwork::write_expression_javascript() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t" << "var " << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "];" << endl;
         }
@@ -3637,6 +3651,8 @@ string NeuralNetwork::write_expression_javascript() const{
 
     found_tokens.push_back("exp");
     found_tokens.push_back("tanh");
+    found_tokens.push_back("max");
+    found_tokens.push_back("min");
     string sufix = "Math.";
     
     for (auto& t:tokens)
@@ -3679,11 +3695,11 @@ string NeuralNetwork::write_expression_javascript() const{
         }
     }
 
-    buffer << "\t" << "var out = new Object();" << endl;
+    buffer << "\t" << "var out = [];" << endl;
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i] == "")
+        if (outputs[i].empty())
         {
             buffer << "\t" << "out.push(output" << to_string(i) << ");"<< endl;
         }
@@ -3694,13 +3710,13 @@ string NeuralNetwork::write_expression_javascript() const{
     }
     
     buffer << "\n\t" << "return out;" << endl;
-    buffer << "}"  << endl;
+    buffer << "}" << "\n" << endl;
 
     if(logistic)
     {
         buffer << "function Logistic(x) {" << endl;
-        buffer << "var z = 1/(1+exp(x));" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tvar z = 1/(1+Math.exp(x));" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3708,8 +3724,8 @@ string NeuralNetwork::write_expression_javascript() const{
     if(ReLU)
     {
         buffer << "function ReLU(x) {" << endl;
-        buffer << "var z = max(0, x);" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tvar z = Math.max(0, x);" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3717,12 +3733,12 @@ string NeuralNetwork::write_expression_javascript() const{
     if(Threshold)
     {
         buffer << "function Threshold(x) {" << endl;
-        buffer << "if (x < 0) {" << endl;
-        buffer << "var z = 0;" << endl;
-        buffer << "}else{" << endl;
-        buffer << "var z = 1;" << endl;
-        buffer << "}" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tif (x < 0) {" << endl;
+        buffer << "\t\tvar z = 0;" << endl;
+        buffer << "\t}else{" << endl;
+        buffer << "\t\tvar z = 1;" << endl;
+        buffer << "\t}" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3730,12 +3746,12 @@ string NeuralNetwork::write_expression_javascript() const{
     if(SymThreshold)
     {
         buffer << "function SymmetricThreshold(x) {" << endl;
-        buffer << "if (x < 0) {" << endl;
-        buffer << "var z = -1;" << endl;
-        buffer << "}else{" << endl;
-        buffer << "var z=1;" << endl;
-        buffer << "}" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tif (x < 0) {" << endl;
+        buffer << "\t\tvar z = -1;" << endl;
+        buffer << "\t}else{" << endl;
+        buffer << "\t\tvar z=1;" << endl;
+        buffer << "\t}" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3743,13 +3759,13 @@ string NeuralNetwork::write_expression_javascript() const{
     if(ExpLinear)
     {
         buffer << "function ExponentialLinear(x) {" << endl;
-        buffer << "var alpha = 1.67326;" << endl;
-        buffer << "if (x>0){" << endl;
-        buffer << "var z = x;" << endl;
-        buffer << "}else{" << endl;
-        buffer << "var z = alpha*(exp(x)-1);" << endl;
-        buffer << "}" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tvar alpha = 1.67326;" << endl;
+        buffer << "\tif (x>0){" << endl;
+        buffer << "\t\tvar z = x;" << endl;
+        buffer << "\t}else{" << endl;
+        buffer << "\t\tvar z = alpha*(Math.exp(x)-1);" << endl;
+        buffer << "\t}" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3757,13 +3773,13 @@ string NeuralNetwork::write_expression_javascript() const{
     if(SExpLinear)
     {
         buffer << "function ScaledExponentialLinear(x) {" << endl;
-        buffer << "var alpha  = 1.67326;" << endl;
-        buffer << "var lambda = 1.05070;" << endl;
-        buffer << "if (x>0){" << endl;
-        buffer << "var z = lambda*x;" << endl;
-        buffer << "}else{" << endl;
-        buffer << "var z = lambda*alpha*(exp(x)-1);" << endl;
-        buffer << "}" << endl;
+        buffer << "\tvar alpha  = 1.67326;" << endl;
+        buffer << "\tvar lambda = 1.05070;" << endl;
+        buffer << "\tif (x>0){" << endl;
+        buffer << "\t\tvar z = lambda*x;" << endl;
+        buffer << "\t}else{" << endl;
+        buffer << "\t\tvar z = lambda*alpha*(Math.exp(x)-1);" << endl;
+        buffer << "\t}" << endl;
         buffer << "return z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
@@ -3772,8 +3788,8 @@ string NeuralNetwork::write_expression_javascript() const{
     if(HSigmoid)
     {
         buffer << "function HardSigmoid(x) {" << endl;
-        buffer << "var z=1/(1+exp(-x));" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tvar z=1/(1+Math.exp(-x));" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3781,8 +3797,8 @@ string NeuralNetwork::write_expression_javascript() const{
     if(SoftPlus)
     {
         buffer << "function SoftPlus(int x) {" << endl;
-        buffer << "var z=log(1+exp(x));" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tvar z=log(1+Math.exp(x));" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3790,8 +3806,8 @@ string NeuralNetwork::write_expression_javascript() const{
     if(SoftSign)
     {
         buffer << "function SoftSign(x) {" << endl;
-        buffer << "var z=x/(1+abs(x));" << endl;
-        buffer << "return z;" << endl;
+        buffer << "\tvar z=x/(1+Math.abs(x));" << endl;
+        buffer << "\treturn z;" << endl;
         buffer << "}" << endl;
         buffer << "\n" << endl;
     }
@@ -3852,7 +3868,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "   " << to_string(i) + ") " << "input_" + to_string(i) << endl;
         }
@@ -4009,7 +4025,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t\t" << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "]" << endl;
         }
@@ -4038,7 +4054,7 @@ string NeuralNetwork::write_expression_python() const{
     buffer << "\t\t" << "out = " << "[None]*" << outputs.size() << "" << endl;
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i] == "")
+        if (outputs[i].empty())
         {
             buffer << "\t\t" << "out[" << to_string(i) << "] = " << "output" << to_string(i) << endl;
         }
@@ -4056,7 +4072,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i] == "")
+        if (inputs[i].empty())
         {
             buffer << "\t\t" << "input_"  << to_string(i) << " = "  << "default_val" << "\t" << "#Change this value" << endl;
             buffer << "\t\t" << "inputs[" << to_string(i) << "] = " << "input_" << to_string(i) << "\n" << endl;
@@ -4075,7 +4091,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i] == "")
+        if (outputs[i].empty())
         {
             buffer << "\t\t" << "print( \""<< "\\t " << "output" << to_string(i) << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
         }
