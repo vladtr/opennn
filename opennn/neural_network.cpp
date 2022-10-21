@@ -3823,7 +3823,10 @@ string NeuralNetwork::write_expression_javascript() const{
 string NeuralNetwork::write_expression_python() const{
 
     vector<std::string> found_tokens;
+    vector<std::string> found_tokens2;
+
     ostringstream buffer;
+    int LSTM_number = get_long_short_term_memory_layers_number();
 
     bool logistic     = false;
     bool ReLU         = false;
@@ -3884,6 +3887,18 @@ string NeuralNetwork::write_expression_python() const{
     buffer << "import math" << endl;
     buffer << "import numpy as np" << endl;
     buffer << "\n" << endl;
+    buffer << "class NeuralNetwork:" << endl;
+    buffer << "\t" << "def __init__(self):" << endl;
+    buffer << "\t\t" << "self.inputs_number = " << to_string(inputs.size()) << endl;
+
+    if (LSTM_number > 0)
+    {
+        buffer << "\t\t" << "self.time steps = ts" << endl;
+        buffer << "\t\t" << "hidden_state = " << to_string(inputs.size()) << endl;
+        buffer << "\t\t" << "self.inputs_number = " << to_string(inputs.size()) << endl;
+    }
+
+    buffer << "\n" << endl;
 
     string expression = write_expression();
     vector<std::string> tokens;
@@ -3932,95 +3947,91 @@ string NeuralNetwork::write_expression_python() const{
 
     if(logistic)
     {
-        buffer << "def Logistic (x):" << endl;
-        buffer << "\t" << "z = 1/(1+np.exp(-x))" << endl;
-        buffer << "\t" << "return z" << endl;
+        buffer << "\tdef Logistic (x):" << endl;
+        buffer << "\t\t" << "z = 1/(1+np.exp(-x))" << endl;
+        buffer << "\t\t" << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(ReLU)
     {
-        buffer << "def ReLU (x):" << endl;
-        buffer << "\t" << "z = max(0, x)" << endl;
-        buffer << "\t" << "return z" << endl;
+        buffer << "\tdef ReLU (x):" << endl;
+        buffer << "\t\t" << "z = max(0, x)" << endl;
+        buffer << "\t\t" << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(Threshold)
     {
-        buffer << "def Threshold (x):" << endl;
-        buffer << "\t"   << "if (x < 0):" << endl;
-        buffer << "\t\t" << "z = 0" << endl;
-        buffer << "\t"   << "else:" << endl;
-        buffer << "\t\t" << "z = 1" << endl;
-        buffer << "\t"   << "return z" << endl;
+        buffer << "\tdef Threshold (x):" << endl;
+        buffer << "\t\t"   << "if (x < 0):" << endl;
+        buffer << "\t\t\t" << "z = 0" << endl;
+        buffer << "\t\t"   << "else:" << endl;
+        buffer << "\t\t\t" << "z = 1" << endl;
+        buffer << "\t\t"   << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(SymThreshold)
     {
-        buffer << "def SymmetricThreshold (x):" << endl;
-        buffer << "\t"   << "if (x < 0):" << endl;
-        buffer << "\t\t" << "z = -1" << endl;
-        buffer << "\t"   << "else:" << endl;
-        buffer << "\t\t" << "z = 1" << endl;
-        buffer << "\t"   << "return z" << endl;
+        buffer << "\tdef SymmetricThreshold (x):" << endl;
+        buffer << "\t\t"   << "if (x < 0):" << endl;
+        buffer << "\t\t\t" << "z = -1" << endl;
+        buffer << "\t\t"   << "else:" << endl;
+        buffer << "\t\t\t" << "z = 1" << endl;
+        buffer << "\t\t"   << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(ExpLinear)
     {
-        buffer << "def ExponentialLinear (x):" << endl;
-        buffer << "\t"   << "float alpha = 1.67326" << endl;
-        buffer << "\t"   << "if (x>0):" << endl;
-        buffer << "\t\t" << "z = x" << endl;
-        buffer << "\t"   << "else:" << endl;
-        buffer << "\t\t" << "z = alpha*(np.exp(x)-1)" << endl;
-        buffer << "\t"   << "return z" << endl;
+        buffer << "\tdef ExponentialLinear (x):" << endl;
+        buffer << "\t\t"   << "float alpha = 1.67326" << endl;
+        buffer << "\t\t"   << "if (x>0):" << endl;
+        buffer << "\t\t\t" << "z = x" << endl;
+        buffer << "\t\t"   << "else:" << endl;
+        buffer << "\t\t\t" << "z = alpha*(np.exp(x)-1)" << endl;
+        buffer << "\t\t"   << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(SExpLinear)
     {
-        buffer << "def ExponentialLinear (x):" << endl;
-        buffer << "\t"   << "float alpha = 1.67326" << endl;
-        buffer << "\t"   << "float lambda = 1.05070" << endl;
-        buffer << "\t"   << "if (x>0):" << endl;
-        buffer << "\t\t" << "z = lambda*x" << endl;
-        buffer << "\t"   << "else:" << endl;
-        buffer << "\t\t" << "z = lambda*alpha*(np.exp(x)-1)" << endl;
-        buffer << "\t"   << "return z" << endl;
+        buffer << "\tdef ScaledExponentialLinear (x):" << endl;
+        buffer << "\t\t"   << "float alpha = 1.67326" << endl;
+        buffer << "\t\t"   << "float lambda = 1.05070" << endl;
+        buffer << "\t\t"   << "if (x>0):" << endl;
+        buffer << "\t\t\t" << "z = lambda*x" << endl;
+        buffer << "\t\t"   << "else:" << endl;
+        buffer << "\t\t\t" << "z = lambda*alpha*(np.exp(x)-1)" << endl;
+        buffer << "\t\t"   << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(HSigmoid)
     {
-        buffer << "def HardSigmoid (x):" << endl;
-        buffer << "\t"   <<  "z = 1/(1+np.exp(-x))" << endl;
-        buffer << "\t"   <<  "return z" << endl;
+        buffer << "\tdef HardSigmoid (x):" << endl;
+        buffer << "\t\t"   <<  "z = 1/(1+np.exp(-x))" << endl;
+        buffer << "\t\t"   <<  "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(SoftPlus)
     {
-        buffer << "def SoftPlus (x):" << endl;
-        buffer << "\t"   << "z = log(1+np.exp(x))" << endl;
-        buffer << "\t"   << "return z" << endl;
+        buffer << "\tdef SoftPlus (x):" << endl;
+        buffer << "\t\t"   << "z = log(1+np.exp(x))" << endl;
+        buffer << "\t\t"   << "return z" << endl;
         buffer << "\n" << endl;
     }
 
     if(SoftSign)
     {
-        buffer << "def SoftSign (x):" << endl;
-        buffer << "\t"   << "z = x/(1+abs(x))" << endl;
-        buffer << "\t"   << "return z" << endl;
+        buffer << "\tdef SoftSign (x):" << endl;
+        buffer << "\t\t"   << "z = x/(1+abs(x))" << endl;
+        buffer << "\t\t"   << "return z" << endl;
         buffer << "\n" << endl;
     }
 
-    buffer << "class NeuralNetwork:" << endl;
-    buffer << "\t" << "def __init__(self):" << endl;
-    buffer << "\t\t" << "self.parameter_number = " << to_string(inputs.size()) << endl;
-    buffer << "\n" << endl;
     buffer << "\t" << "def calculate_outputs(inputs):" << endl;
 
     for (int i = 0; i < inputs.dimension(0); i++)
@@ -4036,18 +4047,48 @@ string NeuralNetwork::write_expression_python() const{
     }
 
     buffer << "" << endl;
+
     found_tokens.push_back("exp");
     found_tokens.push_back("tanh");
-    string sufix = "np.";
+
+    found_tokens2.push_back("Logistic");
+    found_tokens2.push_back("ReLU");
+    found_tokens2.push_back("Threshold");
+    found_tokens2.push_back("SymmetricThreshold");
+    found_tokens2.push_back("ExponentialLinear");
+    found_tokens2.push_back("ScaledExponentialLinear");
+    found_tokens2.push_back("HardSigmoid");
+    found_tokens2.push_back("SoftPlus");
+    found_tokens2.push_back("SoftSign");
+
+    string sufix;
+    string new_word;
 
     for (auto& t:tokens)
     {
+        new_word = "";
+        sufix = "np.";
+
         for (auto& key_word : found_tokens)
         {
-            string new_word = "";
+            new_word = "";
             new_word = sufix + key_word;
             replace_all_appearances(t, key_word, new_word);
         }
+
+        new_word = "";
+        sufix = "NeuralNetwork.";
+
+        for (auto& key_word : found_tokens2)
+        {
+            new_word = "";
+            new_word = sufix + key_word;
+            replace_all_appearances(t, key_word, new_word);
+        }
+
+        replace_all_appearances(t, "(t)", "");
+        replace_all_appearances(t, "(t-1)", "");
+
         buffer << "\t\t" << t << endl;
     }
 

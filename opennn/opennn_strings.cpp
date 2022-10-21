@@ -926,6 +926,35 @@ void replace_all_appearances(std::string& s, std::string const& toReplace, std::
 }
 
 
+ ///Returns the number of apprearances of a substring
+ ///@brief WordOccurrence
+ ///@param sentence
+ ///@param word
+ ///@return
+
+int WordOccurrence(char *sentence, char *word)
+{
+    int slen = strlen(sentence);
+    int wordlen = strlen(word);
+    int count = 0;
+    int i, j;
+
+    for(i=0; i<slen; i++)
+    {
+        for(j=0; j<wordlen; j++)
+        {
+            if(sentence[i+j]!=word[j])
+            break;
+        }
+        if(j==wordlen)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+
 /// Removes whitespaces from the start and the end of the string passed as argument.
 /// This includes the ASCII characters "\t", "\n", "\v", "\f", "\r", and " ".
 /// @param str String to be checked.
