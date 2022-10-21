@@ -3827,6 +3827,8 @@ string NeuralNetwork::write_expression_python() const{
 
     ostringstream buffer;
     int LSTM_number = get_long_short_term_memory_layers_number();
+    int cell_state_counter = 0;
+    int hidden_state_counter = 0;
 
     bool logistic     = false;
     bool ReLU         = false;
@@ -3864,8 +3866,8 @@ string NeuralNetwork::write_expression_python() const{
 	buffer << "\t" << "inputs[2] = Input_3" << endl;
 	buffer << "\t" << ". . ." << endl;
     buffer << "\n" << endl;
-
     buffer << "Inputs Names: \t" << endl;
+
     const Tensor<string, 1> inputs = get_inputs_names();
     const Tensor<string, 1> outputs = get_outputs_names();
 
@@ -3883,21 +3885,6 @@ string NeuralNetwork::write_expression_python() const{
 
     buffer << "\n" << endl;
     buffer << "\'\'\' " << endl;
-    buffer << "\n" << endl;
-    buffer << "import math" << endl;
-    buffer << "import numpy as np" << endl;
-    buffer << "\n" << endl;
-    buffer << "class NeuralNetwork:" << endl;
-    buffer << "\t" << "def __init__(self):" << endl;
-    buffer << "\t\t" << "self.inputs_number = " << to_string(inputs.size()) << endl;
-
-    if (LSTM_number > 0)
-    {
-        buffer << "\t\t" << "self.time steps = ts" << endl;
-        buffer << "\t\t" << "hidden_state = " << to_string(inputs.size()) << endl;
-        buffer << "\t\t" << "self.inputs_number = " << to_string(inputs.size()) << endl;
-    }
-
     buffer << "\n" << endl;
 
     string expression = write_expression();
@@ -3924,6 +3911,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (auto& t:tokens)
     {
+
         size_t substring_length0 = t.find(target_string0);
         size_t substring_length1 = t.find(target_string1);
         size_t substring_length2 = t.find(target_string2);
@@ -3943,7 +3931,64 @@ string NeuralNetwork::write_expression_python() const{
         if (substring_length6 < t.size() && substring_length6!=0){ HSigmoid = true; }
         if (substring_length7 < t.size() && substring_length7!=0){ SoftPlus = true; }
         if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
+
+        string word = "";
+        for (char& c : t)
+        {
+            if ( c!=' ' && c!='=' ){ word += c; }
+            else { break; }
+        }
+        if (word.size() > 1)
+        {
+            found_tokens.push_back(word);
+        }
+
     }
+
+    for (string & token: found_tokens)
+    {
+        if (token.find("cell_state") == 0)
+        {
+            cell_state_counter += 1;
+        }
+
+        if (token.find("hidden_state") == 0)
+        {
+            hidden_state_counter += 1;
+        }
+    }
+
+    buffer << "import math" << endl;
+    buffer << "import numpy as np" << endl;
+    buffer << "\n" << endl;
+    buffer << "class NeuralNetwork:" << endl;
+
+    if (LSTM_number > 0)
+    {
+        buffer << "\t" << "def __init__(self, ts = 0):" << endl;
+        buffer << "\t\t" << "self.inputs_number = " << to_string(inputs.size()) << endl;
+        buffer << "\t\t" << "self.time_steps = ts" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "\t\t" << "self.hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "\t\t" << "self.cell_state_" << to_string(i) << " = 0" << endl;
+
+        }
+
+        buffer << "\t\t" << "self.time_step_counter = 1" << endl;
+    }
+    else
+    {
+        buffer << "\t" << "def __init__(self):" << endl;
+        buffer << "\t\t" << "self.inputs_number = " << to_string(inputs.size()) << endl;
+    }
+
+    buffer << "\n" << endl;
 
     if(logistic)
     {
@@ -4032,7 +4077,7 @@ string NeuralNetwork::write_expression_python() const{
         buffer << "\n" << endl;
     }
 
-    buffer << "\t" << "def calculate_outputs(inputs):" << endl;
+    buffer << "\t" << "def calculate_outputs(self, inputs):" << endl;
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
@@ -4046,8 +4091,24 @@ string NeuralNetwork::write_expression_python() const{
         }
     }
 
+    if (LSTM_number>0)
+    {
+        buffer << "\n\t\t" << "if( self.time_step_counter % self.time_steps == 0 ):" << endl;
+        buffer << "\t\t\t" << "self.t = 1" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "\t\t\t" << "self.hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "\t\t\t" << "self.cell_state_" << to_string(i) << " = 0" << endl;
+        }
+    }
     buffer << "" << endl;
 
+    found_tokens.clear();
     found_tokens.push_back("exp");
     found_tokens.push_back("tanh");
 
@@ -4086,8 +4147,12 @@ string NeuralNetwork::write_expression_python() const{
             replace_all_appearances(t, key_word, new_word);
         }
 
-        replace_all_appearances(t, "(t)", "");
-        replace_all_appearances(t, "(t-1)", "");
+        if(LSTM_number>0){
+            replace_all_appearances(t, "(t)", "");
+            replace_all_appearances(t, "(t-1)", "");
+            replace_all_appearances(t, "cell_state", "self.cell_state");
+            replace_all_appearances(t, "hidden_state", "self.hidden_state");
+        }
 
         buffer << "\t\t" << t << endl;
     }
@@ -4105,9 +4170,10 @@ string NeuralNetwork::write_expression_python() const{
         }
     }
 
+    buffer << "\n\t\t" << "self.time_step_counter += 1" << endl;
     buffer << "\n\t\t" << "return out;" << endl;
     buffer << "\n" << endl;
-    buffer << "\t"   << "def main ():" << endl;
+    buffer << "\t"   << "def main (self):" << endl;
     buffer << "\t\t" << "default_val = 3.1416" << endl;
     buffer << "\t\t" << "inputs = [None]*" << to_string(inputs.size()) << "\n" << endl;
 
@@ -4126,7 +4192,7 @@ string NeuralNetwork::write_expression_python() const{
     }
 
     buffer << "" << endl;
-    buffer << "\t\t" << "outputs = NeuralNetwork.calculate_outputs(inputs)" << endl;
+    buffer << "\t\t" << "outputs = NeuralNetwork.calculate_outputs(self, inputs)" << endl;
     buffer << "" << endl;
     buffer << "\t\t" << "print(\"\\nThese are your outputs:\\n\")" << endl;
 
@@ -4141,8 +4207,16 @@ string NeuralNetwork::write_expression_python() const{
             buffer << "\t\t" << "print( \""<< "\\t " << outputs_names[i] << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
         }
     }
+    buffer << "\n";
 
-    buffer << "\n" << "NeuralNetwork.main()" << endl;
+    if (LSTM_number>0){
+        buffer << "steps = 3" << endl;
+        buffer << "nn = NeuralNetwork(steps)" << endl;
+        buffer << "nn.main()" << endl;
+    }else{
+        buffer << "nn = NeuralNetwork()" << endl;
+        buffer << "nn.main()" << endl;
+    }
     string out = buffer.str();
     return out;
 }
