@@ -839,10 +839,10 @@ Tensor<Tensor<string,1>,1> TextAnalytics::apply_english_stemmer(const Tensor<Ten
                                 r1_r2[0] = r1_r2[0].substr(0,r1_r2[0].length()-1);
                                 r1_r2[1] = r1_r2[1].substr(0,r1_r2[1].length()-1);
                             }
-                            else if((r1_r2[0] == "" && current_word.length() >= 3 && !contains(vowels,string(1,current_word[current_word.length()-1])) &&
+                            else if((r1_r2[0].empty() && current_word.length() >= 3 && !contains(vowels,string(1,current_word[current_word.length()-1])) &&
                                      !(current_word[current_word.length()-1] == 'w' || current_word[current_word.length()-1] == 'x' || current_word[current_word.length()-1] == 'Y') &&
                                      contains(vowels,string(1,current_word[current_word.length()-2])) && !contains(vowels,string(1,current_word[current_word.length()-3]))) ||
-                                    (r1_r2[0] == "" && current_word.length() == 2 && contains(vowels,string(1,current_word[0])) && contains(vowels, string(1,current_word[1]))))
+                                    (r1_r2[0].empty() && current_word.length() == 2 && contains(vowels,string(1,current_word[0])) && contains(vowels, string(1,current_word[1]))))
                             {
                                 current_word = current_word + "e";
 
