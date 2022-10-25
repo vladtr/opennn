@@ -3143,6 +3143,11 @@ string NeuralNetwork::write_expression_api() const
 {
     vector<std::string> found_tokens;
     ostringstream buffer;
+
+    int LSTM_number = get_long_short_term_memory_layers_number();
+    int cell_state_counter = 0;
+    int hidden_state_counter = 0;
+
     bool logistic     = false;
     bool ReLU         = false;
     bool Threshold    = false;
@@ -3210,8 +3215,42 @@ string NeuralNetwork::write_expression_api() const
     buffer << "</p>" << endl;
     buffer << "</div>" << endl;
     buffer << "<h4>" << endl;
+    buffer << "<?php" << "\n" << endl;
 
-    buffer << "<?php" << endl;
+    //NUEVO
+    if(LSTM_number>0)
+    {
+        for (string & token: found_tokens)
+        {
+            if (token.find("cell_state") == 0)
+            {
+                cell_state_counter += 1;
+            }
+
+            if (token.find("hidden_state") == 0)
+            {
+                hidden_state_counter += 1;
+            }
+        }
+
+        buffer << "class NeuralNetwork{" << endl;
+        buffer << "public $time_steps = 3;" << endl;
+        buffer << "public $time_step_counter = 1;" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "public $" << "hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "public $" << "cell_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        buffer << "}" << endl;
+    }
+
+
     buffer << "session_start();" << endl;
     buffer << "if (isset($_SESSION['lastpage']) && $_SESSION['lastpage'] == __FILE__) { " << endl;
     buffer << "if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') " << endl;
@@ -3269,6 +3308,26 @@ string NeuralNetwork::write_expression_api() const
     buffer << "$status =400;" << endl;
     buffer << "$status_msg = 'invalid parameters';" << endl;
     buffer << "}"   << endl;
+
+    //NUEVO
+    if(LSTM_number>0)
+    {
+        buffer << "if( $nn->time_step_counter % $nn->time_steps === 0 ){" << endl;
+        buffer << "$nn->time_steps = 3;" << endl;
+        buffer << "$nn->time_step_counter = 1;" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "$nn->" << "hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "$nn->" << "cell_state_" << to_string(i) << " = 0" << endl;
+        }
+        buffer << "}" << endl;
+    }
+
     buffer << "\n" << endl;
 
     string expression = write_expression();
@@ -3337,6 +3396,18 @@ string NeuralNetwork::write_expression_api() const
             new_word = phpVAR + key_word;
             replace_all_appearances(t, key_word, new_word);
         }
+
+        //NUEVO
+        if(LSTM_number>0)
+        {
+            replace_all_appearances(t, "(t)"  , "");
+            replace_all_appearances(t, "(t-1)", "");
+            replace_all_appearances(t, "hidden_", "$hidden_");
+            replace_all_appearances(t, "cell_"  , "$cell_"  );
+            replace_all_appearances(t, "$hidden_", "$nn->hidden_");
+            replace_all_appearances(t, "$cell_"  , "$nn->cell_"  );
+        }
+
         buffer << t << endl;
     }
 
@@ -3361,6 +3432,7 @@ string NeuralNetwork::write_expression_api() const
     buffer << "{" << endl;
     buffer << "$response = ['status' => $status,  'status_message' => $status_msg" << "];" << endl;
     buffer << "}" << endl;
+    buffer << "$nn->time_step_counter += 1;" << endl;
     buffer << "\n" << endl;
 
     buffer << "$json_response_pretty = json_encode($response, JSON_PRETTY_PRINT);" << endl;
