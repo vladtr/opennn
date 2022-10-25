@@ -3218,6 +3218,33 @@ string NeuralNetwork::write_expression_api() const
     buffer << "<?php" << "\n" << endl;
 
     //NUEVO
+    string expression = write_expression();
+    string phpVAR = "$";
+    vector<std::string> tokens;
+    std::string token;
+    std::stringstream ss(expression);
+
+    while (getline(ss, token, '\n'))
+    {
+        if (token.size() > 1 && token.back() == '{'){ break; }
+        if (token.size() > 1 && token.back() != ';'){ token += ';'; }
+        tokens.push_back(token);
+    }
+
+    for (auto& s : tokens)
+    {
+        string word = "";
+        for (char& c : s)
+        {
+            if ( c!=' ' && c!='=' ){ word += c; }
+            else { break; }
+        }
+        if (word.size() > 1)
+        {
+            found_tokens.push_back(word);
+        }
+    }
+
     if(LSTM_number>0)
     {
         for (string & token: found_tokens)
@@ -3239,18 +3266,18 @@ string NeuralNetwork::write_expression_api() const
 
         for(int i = 0; i < hidden_state_counter; i++)
         {
-            buffer << "public $" << "hidden_state_" << to_string(i) << " = 0" << endl;
+            buffer << "public $" << "hidden_state_" << to_string(i) << " = 0;" << endl;
         }
 
         for(int i = 0; i < cell_state_counter; i++)
         {
-            buffer << "public $" << "cell_state_" << to_string(i) << " = 0" << endl;
+            buffer << "public $" << "cell_state_" << to_string(i) << " = 0;" << endl;
         }
 
         buffer << "}" << endl;
     }
 
-
+    buffer << "$nn = new NeuralNetwork;" << endl;
     buffer << "session_start();" << endl;
     buffer << "if (isset($_SESSION['lastpage']) && $_SESSION['lastpage'] == __FILE__) { " << endl;
     buffer << "if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') " << endl;
@@ -3318,44 +3345,17 @@ string NeuralNetwork::write_expression_api() const
 
         for(int i = 0; i < hidden_state_counter; i++)
         {
-            buffer << "$nn->" << "hidden_state_" << to_string(i) << " = 0" << endl;
+            buffer << "$nn->" << "hidden_state_" << to_string(i) << " = 0;" << endl;
         }
 
         for(int i = 0; i < cell_state_counter; i++)
         {
-            buffer << "$nn->" << "cell_state_" << to_string(i) << " = 0" << endl;
+            buffer << "$nn->" << "cell_state_" << to_string(i) << " = 0;" << endl;
         }
         buffer << "}" << endl;
     }
 
     buffer << "\n" << endl;
-
-    string expression = write_expression();
-    string phpVAR = "$";
-    vector<std::string> tokens;
-    std::string token;
-    std::stringstream ss(expression);
-
-    while (getline(ss, token, '\n'))
-    {
-        if (token.size() > 1 && token.back() == '{'){ break; }
-        if (token.size() > 1 && token.back() != ';'){ token += ';'; }
-        tokens.push_back(token);
-    }
-
-    for (auto& s : tokens)
-    {
-        string word = "";
-        for (char& c : s)
-        {
-            if ( c!=' ' && c!='=' ){ word += c; }
-            else { break; }
-        }
-        if (word.size() > 1)
-        {
-            found_tokens.push_back(word);
-        }
-    }
 
     std::string target_string0("Logistic");
     std::string target_string1("ReLU");
