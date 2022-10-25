@@ -3507,7 +3507,12 @@ string NeuralNetwork::write_expression_api() const
 string NeuralNetwork::write_expression_javascript() const{
 
     vector<std::string> found_tokens;
+    vector<std::string> found_tokens2;
     ostringstream buffer;
+
+    int LSTM_number = get_long_short_term_memory_layers_number();
+    int cell_state_counter = 0;
+    int hidden_state_counter = 0;
 
     bool logistic     = false;
     bool ReLU         = false;
@@ -3519,9 +3524,6 @@ string NeuralNetwork::write_expression_javascript() const{
     bool SoftPlus     = false;
     bool SoftSign     = false;
 
-
-    //CHANGE THIS TEXT
-
     buffer << "/*" << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
     buffer << "artelnics@artelnics.com\t" << endl;
@@ -3530,9 +3532,6 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "You can manage it with the main method, where you \t" << endl;
     buffer << "can change the values of your inputs. For example:" << endl;
     buffer << "" << endl;
-
-    //CHANGE THIS TEXT
-
     buffer << "if we want to add these 3 values (0.3, 2.5 and 1.8)" << endl;
     buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
     buffer << "main program has to look like this:" << endl;
@@ -3568,10 +3567,6 @@ string NeuralNetwork::write_expression_javascript() const{
 
     buffer << "*/" << endl;
     buffer << "\n" << endl;
-
-    //======CODE STARTS HERE ========//
-    buffer << "main()" << endl;
-    buffer << "" << endl;
     buffer << "function main()" << endl;
     buffer << "{" << endl;
     buffer << "\t" << "var inputs = [];" << endl;
@@ -3597,19 +3592,17 @@ string NeuralNetwork::write_expression_javascript() const{
     {
         if (outputs[i].empty())
         {
-            buffer << "\t" << "console.log(\"\\n \noutput" << to_string(i) << ":\");" << endl;
-            buffer << "\tconsole.log( outputs[" << to_string(i) << "] );" << "\n" << endl;
+            buffer << "\t" << "console.log(\"\\n\\t output" << to_string(i) << ":\");" << endl;
+            buffer << "\tconsole.log(\"\\t   \" + outputs[" << to_string(i) << "] );" << "\n" << endl;
         }
         else
         {
-            buffer << "\t" << "console.log(\"\\n "<< outputs_names[i] << ":\");" << endl;
-            buffer << "\tconsole.log( outputs[" << to_string(i) << "] );" << "\n" << endl;
+            buffer << "\t" << "console.log(\"\\n\\t "<< outputs_names[i] << ":\");" << endl;
+            buffer << "\tconsole.log(\"\\t   \" + outputs[" << to_string(i) << "] );" << "\n" << endl;
         }
     }
     buffer << "}" << "\n" << endl;
     
-    ///============CALCULATE OUTPUT FUNCTION============///
-
     string expression = write_expression();
     vector<std::string> tokens;
     std::string token;
@@ -3639,6 +3632,51 @@ string NeuralNetwork::write_expression_javascript() const{
 
     buffer << "" << endl;
     
+    
+    for (auto& t:tokens)
+    {
+        string word = "";
+        for (char& c : t)
+        {
+            if ( c!=' ' && c!='=' ){ word += c; }
+            else { break; }
+        }
+        if (word.size() > 1)
+        {
+            found_tokens.push_back(word);
+        }
+    }
+
+    if(LSTM_number>0)
+    {
+        for (string & token: found_tokens)
+        {
+            if (token.find("cell_state") == 0)
+            {
+                cell_state_counter += 1;
+            }
+
+            if (token.find("hidden_state") == 0)
+            {
+                hidden_state_counter += 1;
+            }
+        }
+
+        buffer << "\t" << "if( time_step_counter % time_steps == 0 ){" << endl;
+        buffer << "\t\t" << "time_step_counter = 1" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "\t\t" << "hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "\t\t" << "cell_state_" << to_string(i) << " = 0" << endl;
+        }
+    }
+    buffer << "\t}\n" << endl;
+
     std::string target_string0("Logistic");
     std::string target_string1("ReLU");
     std::string target_string2("Threshold");
@@ -3649,15 +3687,14 @@ string NeuralNetwork::write_expression_javascript() const{
     std::string target_string7("SoftPlus");
     std::string target_string8("SoftSign");
 
-    found_tokens.push_back("exp");
-    found_tokens.push_back("tanh");
-    found_tokens.push_back("max");
-    found_tokens.push_back("min");
+    found_tokens2.push_back("exp");
+    found_tokens2.push_back("tanh");
+    found_tokens2.push_back("max");
+    found_tokens2.push_back("min");
     string sufix = "Math.";
-    
+
     for (auto& t:tokens)
     {
-
         size_t substring_length0 = t.find(target_string0);
         size_t substring_length1 = t.find(target_string1);
         size_t substring_length2 = t.find(target_string2);
@@ -3678,7 +3715,7 @@ string NeuralNetwork::write_expression_javascript() const{
         if (substring_length7 < t.size() && substring_length7!=0){ SoftPlus = true; }
         if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
 
-        for (auto& key_word : found_tokens)
+        for (auto& key_word : found_tokens2)
         {
             string new_word = "";
             new_word = sufix + key_word;
@@ -3693,6 +3730,11 @@ string NeuralNetwork::write_expression_javascript() const{
         {
             buffer << "\t" << "var " << t << endl;
         }
+    }
+
+    if(LSTM_number>0)
+    {
+        buffer << "\t" << "time_step_counter += 1" << "\n" << endl;
     }
 
     buffer << "\t" << "var out = [];" << endl;
@@ -3812,7 +3854,31 @@ string NeuralNetwork::write_expression_javascript() const{
         buffer << "\n" << endl;
     }
 
+    if(LSTM_number>0){
+        buffer << "var steps = 3;            " << endl;
+        buffer << "var time_steps = steps;   " << endl;
+        buffer << "var time_step_counter = 1;" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "var " << "var hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "var " << "var cell_state_" << to_string(i) << " = 0" << endl;
+        }
+    }
+    buffer << "\n" << "main()" << endl;
+
     string out = buffer.str();
+    if(LSTM_number>0)
+    {
+        replace_all_appearances(out, "(t)", "");
+        replace_all_appearances(out, "(t-1)", "");
+        replace_all_appearances(out, "var cell_state"  , "cell_state"  );
+        replace_all_appearances(out, "var hidden_state", "hidden_state");
+    }
     return out;
 
 }

@@ -126,14 +126,18 @@ int main(int argc, char* argv[])
 
         NeuralNetwork nn;
 
-        LongShortTermMemoryLayer lstm (1,1);
+        LongShortTermMemoryLayer lstm (3,3);
         lstm.set_activation_function("Logistic");
         nn.add_layer(&lstm);
 
-        Eigen::Tensor<string, 1> t2(1);
+        Eigen::Tensor<string, 1> t2(3);
         t2(0) = "Id_1";
-        Eigen::Tensor<string, 1> t(1);
+        t2(1) = "Id_2";
+        t2(2) = "Id_3";
+        Eigen::Tensor<string, 1> t(3);
         t(0) = "output1";
+        t(1) = "output2";
+        t(2) = "output3";
         nn.set_inputs_names(t2);
         nn.set_outputs_names(t);
 
@@ -142,7 +146,7 @@ int main(int argc, char* argv[])
         //cout << nn.write_expression_api();
         //cout << "bye world" << endl;
 
-        string expression_py   = nn.write_expression_python();
+        string expression_py   = nn.write_expression_javascript();
         cout << expression_py << endl;
 
     }
