@@ -3275,9 +3275,9 @@ string NeuralNetwork::write_expression_api() const
         }
 
         buffer << "}" << endl;
+        buffer << "$nn = new NeuralNetwork;" << endl;
     }
 
-    buffer << "$nn = new NeuralNetwork;" << endl;
     buffer << "session_start();" << endl;
     buffer << "if (isset($_SESSION['lastpage']) && $_SESSION['lastpage'] == __FILE__) { " << endl;
     buffer << "if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') " << endl;
@@ -3432,7 +3432,12 @@ string NeuralNetwork::write_expression_api() const
     buffer << "{" << endl;
     buffer << "$response = ['status' => $status,  'status_message' => $status_msg" << "];" << endl;
     buffer << "}" << endl;
-    buffer << "$nn->time_step_counter += 1;" << endl;
+
+    if (LSTM_number>0)
+    {
+        buffer << "$nn->time_step_counter += 1;" << endl;
+    }
+
     buffer << "\n" << endl;
 
     buffer << "$json_response_pretty = json_encode($response, JSON_PRETTY_PRINT);" << endl;
