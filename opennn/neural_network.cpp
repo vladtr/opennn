@@ -2782,7 +2782,14 @@ void NeuralNetwork::load_parameters_binary(const string& file_name)
 
 string NeuralNetwork::write_expression_c() const{
 
+    int LSTM_number = get_long_short_term_memory_layers_number();
+    int cell_state_counter = 0;
+    int hidden_state_counter = 0;
+
+    vector<std::string> found_tokens;
     ostringstream buffer;
+
+    string aux = "";
 
     bool logistic     = false;
     bool ReLU         = false;
@@ -2829,12 +2836,10 @@ string NeuralNetwork::write_expression_c() const{
         if (inputs[i].empty())
         {
             buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
-            //found_tokens.push_back("input_" + to_string(i));
         }
         else
         {
             buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
-            //found_tokens.push_back(inputs[i]);
         }
     }
 
@@ -2858,6 +2863,17 @@ string NeuralNetwork::write_expression_c() const{
         if (token.size() > 1 && token.back() == '{'){ break; }
         if (token.size() > 1 && token.back() != ';'){ token += ';'; }
         tokens.push_back(token);
+    }
+
+    for (auto& s : tokens)
+    {
+        string word = "";
+        for (char& c : s)
+        {
+            if ( c!=' ' && c!='=' ){ word += c; }
+            else { break; }
+        }
+        if (word.size() > 1){  found_tokens.push_back(word); }
     }
 
     std::string target_string0("Logistic");
@@ -2997,7 +3013,45 @@ string NeuralNetwork::write_expression_c() const{
         buffer << "\n" << endl;
     }
 
-    buffer << "vector<float> calculate_outputs(vector<float> inputs)" << endl;
+    if(LSTM_number>0)
+    {
+        for (string & token: found_tokens)
+        {
+            if (token.find("cell_state") == 0)
+            {
+                cell_state_counter += 1;
+            }
+
+            if (token.find("hidden_state") == 0)
+            {
+                hidden_state_counter += 1;
+            }
+        }
+
+        buffer << "struct LSTMMemory" << endl;
+        buffer << "{" << endl;
+        buffer << "\t" << "int time_steps = 3;" << endl;
+        buffer << "\t" << "int time_step_counter = 1;" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "\t" << "float hidden_state_" << to_string(i) << " = 0;" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "\t" << "float cell_state_" << to_string(i) << " = 0;" << endl;
+        }
+
+        buffer << "} lstm; \n\n" << endl;
+        buffer << "vector<float> calculate_outputs(const vector<float>& inputs, LSTMMemory& lstm)" << endl;
+    }
+    else
+    {
+        buffer << "vector<float> calculate_outputs(const vector<float>& inputs)" << endl;
+    }
+
+
     buffer << "{" << endl;
 
     for (int i = 0; i < inputs.dimension(0); i++)
@@ -3012,6 +3066,24 @@ string NeuralNetwork::write_expression_c() const{
         }
     }
 
+    if(LSTM_number>0)
+    {
+        buffer << "\n\tif(lstm.time_step_counter%lstm.time_steps == 0 ){" << endl;
+        buffer << "\t\t" << "lstm.time_step_counter = 1;" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "\t\t" << "lstm.hidden_state_" << to_string(i) << " = 0;" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "\t\t" << "lstm.cell_state_" << to_string(i) << " = 0;" << endl;
+        }
+
+        buffer << "\t}" << endl;
+    }
+
     buffer << "" << endl;
 
     for (auto& t:tokens)
@@ -3022,7 +3094,19 @@ string NeuralNetwork::write_expression_c() const{
         }
         else
         {
-            buffer << "\t" << "const float " << t << endl;
+            aux = "const float " + t;
+
+            if(LSTM_number>0)
+            {
+                replace_all_appearances(aux, "(t)", "");
+                replace_all_appearances(aux, "(t-1)", "");
+                replace_all_appearances(aux, "const float cell_state", "cell_state");
+                replace_all_appearances(aux, "const float hidden_state", "hidden_state");
+                replace_all_appearances(aux, "cell_state"  , "lstm.cell_state"  );
+                replace_all_appearances(aux, "hidden_state", "lstm.hidden_state");
+            }
+
+            buffer << "\t" << aux << endl;
         }
     }
 
@@ -3039,10 +3123,14 @@ string NeuralNetwork::write_expression_c() const{
         }
     }
 
+    if(LSTM_number)
+    {
+        buffer << "\n\t" << "lstm.time_step_counter += 1;" << endl;
+    }
+
     buffer << "\n\t" << "return out;" << endl;
     buffer << "}"  << endl;
     buffer << "\n" << endl;
-
     buffer << "int main(){ \n" << endl;
     buffer << "\t" << "vector<float> inputs(" << to_string(inputs.size()) << "); \n" << endl;
 
@@ -3061,10 +3149,19 @@ string NeuralNetwork::write_expression_c() const{
     }
 
     buffer << "" << endl;
-    buffer << "\t" << "vector<float> outputs(" << outputs.size() <<");" << endl;
-    buffer << "\t" << "outputs = calculate_outputs(inputs);" << endl;
-    buffer << "" << endl;
 
+    if(LSTM_number > 0)
+    {
+        buffer << "\t"   << "LSTMMemory lstm;" << "\n" << endl;
+        buffer << "\t"   << "vector<float> outputs(" << outputs.size() <<");" << endl;
+        buffer << "\n\t" << "outputs = calculate_outputs(inputs, lstm);" << endl;
+    }
+    else
+    {
+        buffer << "\t"   << "vector<float> outputs(" << outputs.size() <<");" << endl;
+        buffer << "\n\t" << "outputs = calculate_outputs(inputs);" << endl;
+    }
+    buffer << "" << endl;
     buffer << "\t" << "printf(\"These are your outputs:\\n\");" << endl;
 
     for (int i = 0; i < outputs.dimension(0); i++)

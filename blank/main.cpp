@@ -99,8 +99,8 @@ int main(int argc, char* argv[])
         //       TEST 2          //
         //=======================//
 
-        ///THREE INPUTS AND TWO OUTPUTS TEST
-        //                                          ({inputs_number, hidden_neurons_number, outputs_number}).
+        //THREE INPUTS AND TWO OUTPUTS TEST
+        //                                        ({inputs_number, hidden_neurons_number, outputs_number}).
         NeuralNetwork nn(NeuralNetwork::ProjectType::Forecasting, {4, 6, 3});
         Eigen::Tensor<string, 1> t2(4);
         t2(0) = "asdas";
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
         nn.set_inputs_names(t2);
         nn.set_outputs_names(t);
 
-        string expression_api = nn.write_expression_api();
+        string expression_api = nn.write_expression_c();
         cout << expression_api << endl;
 
 
@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
         //
         ////cout << nn.write_expression_api();
         ////cout << "bye world" << endl;
-        //string expression_py   = nn.write_expression_api();
+        //string expression_py   = nn.write_expression_c();
         //cout << expression_py << endl;
 
     }
