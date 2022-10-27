@@ -2788,6 +2788,7 @@ string NeuralNetwork::write_expression_c() const{
 
     vector<std::string> found_tokens;
     ostringstream buffer;
+    ostringstream calculate_outputs_buffer;
 
     string aux = "";
 
@@ -2873,7 +2874,11 @@ string NeuralNetwork::write_expression_c() const{
             if ( c!=' ' && c!='=' ){ word += c; }
             else { break; }
         }
-        if (word.size() > 1){  found_tokens.push_back(word); }
+        if (word.size() > 1){
+            //NO SE SI EN CASO DE NO ENCONTRAR DEVOLVERA SIEMPRE LA ULtIMAA POSICION DEL VECTOR
+            if ( find(found_tokens.begin(), found_tokens.end(), word) == found_tokens.end() )
+                found_tokens.push_back(word);
+        }
     }
 
     std::string target_string0("Logistic");
@@ -3086,29 +3091,41 @@ string NeuralNetwork::write_expression_c() const{
 
     buffer << "" << endl;
 
+    //USING BUFFER2
     for (auto& t:tokens)
     {
         if (t.size()<=1)
         {
-            buffer << "" << endl;
+            calculate_outputs_buffer << "" << endl;
         }
         else
         {
-            aux = "const float " + t;
+            //aux = "const float " + t;
 
             if(LSTM_number>0)
             {
-                replace_all_appearances(aux, "(t)", "");
-                replace_all_appearances(aux, "(t-1)", "");
-                replace_all_appearances(aux, "const float cell_state", "cell_state");
-                replace_all_appearances(aux, "const float hidden_state", "hidden_state");
-                replace_all_appearances(aux, "cell_state"  , "lstm.cell_state"  );
-                replace_all_appearances(aux, "hidden_state", "lstm.hidden_state");
+                replace_all_appearances(t, "(t)", "");
+                replace_all_appearances(t, "(t-1)", "");
+                //replace_all_appearances(aux, "const float cell_state", "cell_state");
+                //replace_all_appearances(aux, "const float hidden_state", "hidden_state");
+                //replace_all_appearances(aux, "cell_state"  , "lstm.cell_state"  );
+                //replace_all_appearances(aux, "hidden_state", "lstm.hidden_state");
             }
-
-            buffer << "\t" << aux << endl;
+            calculate_outputs_buffer << "\t" << t << endl;
         }
     }
+
+
+    string calculate_outputs_string = calculate_outputs_buffer.str();
+    for (auto& found_token: found_tokens){
+        string s;
+        string toReplace(found_token);
+        string newword = "const float " + found_token;
+        size_t pos = s.find(toReplace);
+
+        s.replace(pos, toReplace.length(), newword);
+    }
+    buffer << calculate_outputs_string;
 
     buffer << "\t" << "vector<float> out(" << outputs.size() << ");" << endl;
     for (int i = 0; i < outputs.dimension(0); i++)
