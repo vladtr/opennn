@@ -2780,7 +2780,10 @@ void NeuralNetwork::load_parameters_binary(const string& file_name)
 
 /// Returns a string with the c function of the expression represented by the neural network.
 
-string NeuralNetwork::write_expression_c() const{
+string NeuralNetwork::write_expression_c() const
+{
+
+    //get_scaling_layer_pointer()->get_descriptives()
 
     int LSTM_number = get_long_short_term_memory_layers_number();
     int cell_state_counter = 0;
@@ -2801,6 +2804,7 @@ string NeuralNetwork::write_expression_c() const{
     bool HSigmoid     = false;
     bool SoftPlus     = false;
     bool SoftSign     = false;
+
 
     buffer << "/**" << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
@@ -3101,16 +3105,6 @@ string NeuralNetwork::write_expression_c() const{
         else
         {
             //aux = "const float " + t;
-
-            if(LSTM_number>0)
-            {
-                replace_all_appearances(t, "(t)", "");
-                replace_all_appearances(t, "(t-1)", "");
-                //replace_all_appearances(aux, "const float cell_state", "cell_state");
-                //replace_all_appearances(aux, "const float hidden_state", "hidden_state");
-                //replace_all_appearances(aux, "cell_state"  , "lstm.cell_state"  );
-                //replace_all_appearances(aux, "hidden_state", "lstm.hidden_state");
-            }
             calculate_outputs_buffer << "\t" << t << endl;
         }
     }
@@ -3118,12 +3112,22 @@ string NeuralNetwork::write_expression_c() const{
 
     string calculate_outputs_string = calculate_outputs_buffer.str();
     for (auto& found_token: found_tokens){
-        string s;
         string toReplace(found_token);
-        string newword = "const float " + found_token;
-        size_t pos = s.find(toReplace);
 
-        s.replace(pos, toReplace.length(), newword);
+        //el fallo es el cont float, con double si que funciona
+        string newword = "double " + found_token;
+        size_t pos = calculate_outputs_string.find(toReplace);
+        calculate_outputs_string.replace(pos, toReplace.length(), newword);
+    }
+
+    if(LSTM_number>0)
+    {
+        replace_all_appearances(calculate_outputs_string, "(t)", "");
+        replace_all_appearances(calculate_outputs_string, "(t-1)", "");
+        replace_all_appearances(calculate_outputs_string, "double cell_state", "cell_state");
+        replace_all_appearances(calculate_outputs_string, "double hidden_state", "hidden_state");
+        replace_all_appearances(calculate_outputs_string, "cell_state"  , "lstm.cell_state"  );
+        replace_all_appearances(calculate_outputs_string, "hidden_state", "lstm.hidden_state");
     }
     buffer << calculate_outputs_string;
 
