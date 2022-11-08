@@ -930,9 +930,13 @@ void replace_all_appearances(std::string& s, std::string const& toReplace, std::
 /// \brief replace_non_allowed_programming_characters
 /// \param s
 /// \return
-string replace_non_allowed_programming_characters(std::string& s)
+string replace_non_allowed_programming_characters(std::string& s, int& api_prefix_needed)
 {
     string out = "";
+
+    if(api_prefix_needed)
+        out = "$";
+
     for (char& c: s)
     {
         if (c=='/'){ out+="div"; }
@@ -946,27 +950,7 @@ string replace_non_allowed_programming_characters(std::string& s)
         if (isalnum(c)!=0){ out += c; }
         if (isalnum(c)==0){ out+='_'; }
     }
-    //replace_all_appearances(out, " ", "_");
-    //replace_all_appearances(out, "&", "_");
-    //replace_all_appearances(out, "$", "_");
-    //replace_all_appearances(out, " ", "_");
-    //replace_all_appearances(out, "?", "_");
-    //replace_all_appearances(out, "¿", "_");
-    //replace_all_appearances(out, ".", "_");
-    //replace_all_appearances(out, "#", "_");
-    //replace_all_appearances(out, "@", "_");
-    //replace_all_appearances(out, "%", "_");
-    //replace_all_appearances(out, "\\", "_" );
 
-    //replace_all_appearances(out, "/" , "_div_"  );
-    //replace_all_appearances(out, "+" , "_sum_"  );
-    //replace_all_appearances(out, "-" , "_res_"  );
-    //replace_all_appearances(out, "*" , "_mul_"  );
-    //replace_all_appearances(out, "<", "_lower_" );
-    //replace_all_appearances(out, ">", "_bigger_");
-    //replace_all_appearances(out, "=", "_equal_" );
-
-    //out.erase(std::remove_if(out.begin(), out.end(), !(int(*)(int))std::isalnum), out.end());
     return out;
 }
 
@@ -976,9 +960,10 @@ string replace_non_allowed_programming_characters(std::string& s)
 ///@param sentence
 ///@param word
 ///@return
+
 int WordOccurrence(char *sentence, char *word)
 {
-    int slen = strlen(sentence);
+    const int slen = strlen(sentence);
     int wordlen = strlen(word);
     int count = 0;
     int i, j;
@@ -995,6 +980,7 @@ int WordOccurrence(char *sentence, char *word)
             count++;
         }
     }
+
     return count;
 }
 
