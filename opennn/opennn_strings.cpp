@@ -926,12 +926,56 @@ void replace_all_appearances(std::string& s, std::string const& toReplace, std::
 }
 
 
- ///Returns the number of apprearances of a substring
- ///@brief WordOccurrence
- ///@param sentence
- ///@param word
- ///@return
+/// Replaces all apprearances non allowed programming characters of a substring with allowed characters
+/// \brief replace_non_allowed_programming_characters
+/// \param s
+/// \return
+string replace_non_allowed_programming_characters(std::string& s)
+{
+    string out = "";
+    for (char& c: s)
+    {
+        if (c=='/'){ out+="div"; }
+        if (c=='*'){ out+="mul"; }
+        if (c=='+'){ out+="sum"; }
+        if (c=='-'){ out+="res"; }
+        if (c=='='){ out+="_equ_"; }
+        if (c=='!'){ out+="_not_"; }
+        if (c=='<'){ out+="_lower_" ; }
+        if (c=='>'){ out+="_higher_"; }
+        if (isalnum(c)!=0){ out += c; }
+        if (isalnum(c)==0){ out+='_'; }
+    }
+    //replace_all_appearances(out, " ", "_");
+    //replace_all_appearances(out, "&", "_");
+    //replace_all_appearances(out, "$", "_");
+    //replace_all_appearances(out, " ", "_");
+    //replace_all_appearances(out, "?", "_");
+    //replace_all_appearances(out, "¿", "_");
+    //replace_all_appearances(out, ".", "_");
+    //replace_all_appearances(out, "#", "_");
+    //replace_all_appearances(out, "@", "_");
+    //replace_all_appearances(out, "%", "_");
+    //replace_all_appearances(out, "\\", "_" );
 
+    //replace_all_appearances(out, "/" , "_div_"  );
+    //replace_all_appearances(out, "+" , "_sum_"  );
+    //replace_all_appearances(out, "-" , "_res_"  );
+    //replace_all_appearances(out, "*" , "_mul_"  );
+    //replace_all_appearances(out, "<", "_lower_" );
+    //replace_all_appearances(out, ">", "_bigger_");
+    //replace_all_appearances(out, "=", "_equal_" );
+
+    //out.erase(std::remove_if(out.begin(), out.end(), !(int(*)(int))std::isalnum), out.end());
+    return out;
+}
+
+
+///Returns the number of apprearances of a substring
+///@brief WordOccurrence
+///@param sentence
+///@param word
+///@return
 int WordOccurrence(char *sentence, char *word)
 {
     int slen = strlen(sentence);
@@ -1153,12 +1197,11 @@ bool isNotAlnum (char &c)
     return (c < ' ' || c > '~');
 }
 
+
 void remove_not_alnum(string &str)
 {
         str.erase(std::remove_if(str.begin(), str.end(), isNotAlnum), str.end());
 }
-
-
 
 }
 

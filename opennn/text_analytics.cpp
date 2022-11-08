@@ -319,12 +319,9 @@ void TextAnalytics::aux_remove_non_printable_chars(Tensor<string, 1> &documents)
 {
     Tensor<string, 1> new_documents(documents);
 
-
     for(Index i = 0; i < documents.size(); i++)
     {
-
         new_documents[i].erase(std::remove_if(new_documents[i].begin(), new_documents[i].end(), isNotAlnum), new_documents[i].end());
-
     }
 
     documents = new_documents;

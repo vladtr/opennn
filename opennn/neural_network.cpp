@@ -2833,6 +2833,7 @@ string NeuralNetwork::write_expression_c() const
 
     buffer << "Inputs Names:" <<endl;
 
+    /*
     const Tensor<string, 1> inputs = get_inputs_names();
     const Tensor<string, 1> outputs = get_outputs_names();
 
@@ -2845,6 +2846,45 @@ string NeuralNetwork::write_expression_c() const
         else
         {
             buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
+        }
+    }
+    */
+
+    const Tensor<string, 1> inputs_base = get_inputs_names();
+    Tensor<string, 1> inputs(inputs_base.dimension(0));
+
+    const Tensor<string, 1> outputs_base = get_outputs_names();
+    Tensor<string, 1> outputs(outputs_base.dimension(0));
+
+    string input_name_aux;
+    string output_name_aux;
+
+    for (int i = 0; i < inputs_base.dimension(0); i++)
+    {
+        if (inputs_base[i].empty())
+        {
+            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
+        }
+        else
+        {
+            input_name_aux = inputs_base[i];
+            input_name_aux = replace_non_allowed_programming_characters(input_name_aux);
+            inputs(i) = input_name_aux;
+            buffer << "\t" << to_string(i) + ") " << inputs(i) << endl;
+        }
+    }
+
+    for (int i = 0; i < outputs_base.dimension(0); i++)
+    {
+        if (outputs_base[i].empty())
+        {
+            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+        }
+        else
+        {
+            output_name_aux = outputs_base[i];
+            output_name_aux = replace_non_allowed_programming_characters(output_name_aux);
+            outputs(i) = output_name_aux;
         }
     }
 
@@ -2878,8 +2918,8 @@ string NeuralNetwork::write_expression_c() const
             if ( c!=' ' && c!='=' ){ word += c; }
             else { break; }
         }
-        if (word.size() > 1){
-            //NO SE SI EN CASO DE NO ENCONTRAR DEVOLVERA SIEMPRE LA ULtIMAA POSICION DEL VECTOR
+        if (word.size() > 1)
+        {
             if ( find(found_tokens.begin(), found_tokens.end(), word) == found_tokens.end() )
                 found_tokens.push_back(word);
         }
@@ -3214,6 +3254,19 @@ string NeuralNetwork::write_expression() const
     Tensor<string, 1> outputs_names_vector;
     Tensor<string, 1> inputs_names_vector;
     inputs_names_vector = inputs_names;
+    string aux_name = "";
+    for (int i = 0; i < inputs_names.dimension(0); i++)
+    {
+        if (!inputs_names_vector[i].empty())
+        {
+            aux_name = inputs_names[i];
+            inputs_names_vector(i) = replace_non_allowed_programming_characters(aux_name);
+        }
+        else
+        {
+            inputs_names_vector(i) = "input_" + to_string(i);
+        }
+    }
 
     Index layer_neurons_number;
 
@@ -3224,6 +3277,18 @@ string NeuralNetwork::write_expression() const
         if(i == layers_number-1)
         {
             outputs_names_vector = outputs_names;
+            for (int i = 0; i < outputs_names.dimension(0); i++)
+            {
+                if (!outputs_names_vector[i].empty())
+                {
+                    aux_name = outputs_names[i];
+                    outputs_names_vector(i) = replace_non_allowed_programming_characters(aux_name);
+                }
+                else
+                {
+                    outputs_names_vector(i) = "input_" + to_string(i);
+                }
+            }
             buffer << layers_pointers[i]->write_expression(inputs_names_vector, outputs_names_vector) << endl;
         }
         else
@@ -3235,7 +3300,8 @@ string NeuralNetwork::write_expression() const
             {
                 if(layers_names(i) == "scaling_layer")
                 {
-                    outputs_names_vector(j) = "scaled_" + inputs_names(j);
+                    aux_name = inputs_names(j);
+                    outputs_names_vector(j) = "scaled_" + replace_non_allowed_programming_characters(aux_name);
                 }
                 else
                 {
@@ -3291,20 +3357,41 @@ string NeuralNetwork::write_expression_api() const
     buffer << "" << endl;
     buffer << "\tInputs Names: \t" << endl;
 
-    const Tensor<string, 1> inputs = get_inputs_names();
-    const Tensor<string, 1> outputs = get_outputs_names();
+    const Tensor<string, 1> inputs_base = get_inputs_names();
+    Tensor<string, 1> inputs(inputs_base.dimension(0));
 
-    for (int i = 0; i < inputs.dimension(0); i++)
+    const Tensor<string, 1> outputs_base = get_outputs_names();
+    Tensor<string, 1> outputs(outputs_base.dimension(0));
+
+    string input_name_aux;
+    string output_name_aux;
+
+    for (int i = 0; i < inputs_base.dimension(0); i++)
     {
-        if (inputs[i].empty())
+        if (inputs_base[i].empty())
         {
             buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
-            found_tokens.push_back("input_" + to_string(i));
         }
         else
         {
-            buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
-            found_tokens.push_back(inputs[i]);
+            input_name_aux = inputs_base[i];
+            input_name_aux = replace_non_allowed_programming_characters(input_name_aux);
+            inputs(i) = input_name_aux;
+            buffer << "\t" << to_string(i) + ") " << inputs(i) << endl;
+        }
+    }
+
+    for (int i = 0; i < outputs_base.dimension(0); i++)
+    {
+        if (outputs_base[i].empty())
+        {
+            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+        }
+        else
+        {
+            output_name_aux = outputs_base[i];
+            output_name_aux = replace_non_allowed_programming_characters(output_name_aux);
+            outputs(i) = output_name_aux;
         }
     }
 
@@ -3335,7 +3422,6 @@ string NeuralNetwork::write_expression_api() const
     buffer << "<h4>" << endl;
     buffer << "<?php" << "\n" << endl;
 
-    //NUEVO
     string expression = write_expression();
     string phpVAR = "$";
     vector<std::string> tokens;
@@ -3726,6 +3812,7 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "Your model has been exported to this JavaScript file." << endl;
     buffer << "You can manage it with the main method, where you \t" << endl;
     buffer << "can change the values of your inputs. For example:" << endl;
+    buffer << "can change the values of your inputs. For example:" << endl;
     buffer << "" << endl;
     buffer << "if we want to add these 3 values (0.3, 2.5 and 1.8)" << endl;
     buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
@@ -3745,18 +3832,41 @@ string NeuralNetwork::write_expression_javascript() const{
 
     buffer << "Inputs Names:" <<endl;
 
-    const Tensor<string, 1> inputs = get_inputs_names();
-    const Tensor<string, 1> outputs = get_outputs_names();
+    const Tensor<string, 1> inputs_base = get_inputs_names();
+    Tensor<string, 1> inputs(inputs_base.dimension(0));
 
-    for (int i = 0; i < inputs.dimension(0); i++)
+    const Tensor<string, 1> outputs_base = get_outputs_names();
+    Tensor<string, 1> outputs(outputs_base.dimension(0));
+
+    string input_name_aux;
+    string output_name_aux;
+
+    for (int i = 0; i < inputs_base.dimension(0); i++)
     {
-        if (inputs[i].empty())
+        if (inputs_base[i].empty())
         {
             buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
         }
         else
         {
-            buffer << "\t" << to_string(i) + ") " << inputs[i] << endl;
+            input_name_aux = inputs_base[i];
+            input_name_aux = replace_non_allowed_programming_characters(input_name_aux);
+            inputs(i) = input_name_aux;
+            buffer << "\t" << to_string(i) + ") " << inputs(i) << endl;
+        }
+    }
+
+    for (int i = 0; i < outputs_base.dimension(0); i++)
+    {
+        if (outputs_base[i].empty())
+        {
+            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+        }
+        else
+        {
+            output_name_aux = outputs_base[i];
+            output_name_aux = replace_non_allowed_programming_characters(output_name_aux);
+            outputs(i) = output_name_aux;
         }
     }
 
@@ -3785,16 +3895,8 @@ string NeuralNetwork::write_expression_javascript() const{
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i].empty())
-        {
-            buffer << "\t" << "console.log(\"\\n\\t output" << to_string(i) << ":\");" << endl;
-            buffer << "\tconsole.log(\"\\t   \" + outputs[" << to_string(i) << "] );" << "\n" << endl;
-        }
-        else
-        {
-            buffer << "\t" << "console.log(\"\\n\\t "<< outputs_names[i] << ":\");" << endl;
-            buffer << "\tconsole.log(\"\\t   \" + outputs[" << to_string(i) << "] );" << "\n" << endl;
-        }
+        buffer << "\t" << "console.log(\"\\n\\t "<< outputs[i] << ":\");" << endl;
+        buffer << "\tconsole.log(\"\\t   \" + outputs[" << to_string(i) << "] );" << "\n" << endl;
     }
     buffer << "}" << "\n" << endl;
     
@@ -3869,8 +3971,8 @@ string NeuralNetwork::write_expression_javascript() const{
         {
             buffer << "\t\t" << "cell_state_" << to_string(i) << " = 0" << endl;
         }
+        buffer << "\t}\n" << endl;
     }
-    buffer << "\t}\n" << endl;
 
     std::string target_string0("Logistic");
     std::string target_string1("ReLU");
@@ -3936,14 +4038,7 @@ string NeuralNetwork::write_expression_javascript() const{
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i].empty())
-        {
-            buffer << "\t" << "out.push(output" << to_string(i) << ");"<< endl;
-        }
-        else
-        {
-            buffer << "\t" << "out.push(" << outputs[i] << ");" << endl;
-        }
+        buffer << "\t" << "out.push(" << outputs[i] << ");" << endl;
     }
     
     buffer << "\n\t" << "return out;" << endl;
@@ -4101,6 +4196,8 @@ string NeuralNetwork::write_expression_python() const{
     bool SoftPlus     = false;
     bool SoftSign     = false;
 
+
+
     buffer << "\'\'\' " << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
     buffer << "artelnics@artelnics.com\t" << endl;
@@ -4129,18 +4226,57 @@ string NeuralNetwork::write_expression_python() const{
     buffer << "\n" << endl;
     buffer << "Inputs Names: \t" << endl;
 
-    const Tensor<string, 1> inputs = get_inputs_names();
-    const Tensor<string, 1> outputs = get_outputs_names();
+    //const Tensor<string, 1> inputs = get_inputs_names();
+    //const Tensor<string, 1> outputs = get_outputs_names();
 
-    for (int i = 0; i < inputs.dimension(0); i++)
+    //for (int i = 0; i < inputs.dimension(0); i++)
+    //{
+    //    if (inputs[i].empty())
+    //    {
+    //        buffer << "   " << to_string(i) + ") " << "input_" + to_string(i) << endl;
+    //    }
+    //    else
+    //    {
+    //        //inputs[i] = replace_non_allowed_programming_characters(inputs[i]);
+    //        buffer << "   " << to_string(i) + ") " << inputs[i] << endl;
+    //    }
+    //}
+
+    const Tensor<string, 1> inputs_base = get_inputs_names();
+    Tensor<string, 1> inputs(inputs_base.dimension(0));
+
+    const Tensor<string, 1> outputs_base = get_outputs_names();
+    Tensor<string, 1> outputs(outputs_base.dimension(0));
+
+    string input_name_aux;
+    string output_name_aux;
+
+    for (int i = 0; i < inputs_base.dimension(0); i++)
     {
-        if (inputs[i].empty())
+        if (inputs_base[i].empty())
         {
-            buffer << "   " << to_string(i) + ") " << "input_" + to_string(i) << endl;
+            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
         }
         else
         {
-            buffer << "   " << to_string(i) + ") " << inputs[i] << endl;
+            input_name_aux = inputs_base[i];
+            input_name_aux = replace_non_allowed_programming_characters(input_name_aux);
+            inputs(i) = input_name_aux;
+            buffer << "\t" << to_string(i) + ") " << inputs(i) << endl;
+        }
+    }
+
+    for (int i = 0; i < outputs_base.dimension(0); i++)
+    {
+        if (outputs_base[i].empty())
+        {
+            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+        }
+        else
+        {
+            output_name_aux = outputs_base[i];
+            output_name_aux = replace_non_allowed_programming_characters(output_name_aux);
+            outputs(i) = output_name_aux;
         }
     }
 
@@ -4431,7 +4567,11 @@ string NeuralNetwork::write_expression_python() const{
         }
     }
 
-    buffer << "\n\t\t" << "self.time_step_counter += 1" << endl;
+    if(LSTM_number>0)
+    {
+        buffer << "\n\t\t" << "self.time_step_counter += 1" << endl;
+    }
+
     buffer << "\n\t\t" << "return out;" << endl;
     buffer << "\n" << endl;
     buffer << "\t"   << "def main (self):" << endl;
@@ -4459,14 +4599,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i].empty())
-        {
-            buffer << "\t\t" << "print( \""<< "\\t " << "output" << to_string(i) << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
-        }
-        else
-        {
-            buffer << "\t\t" << "print( \""<< "\\t " << outputs_names[i] << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
-        }
+        buffer << "\t\t" << "print( \""<< "\\t " << outputs[i] << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
     }
     buffer << "\n";
 
