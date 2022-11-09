@@ -930,19 +930,18 @@ void replace_all_appearances(std::string& s, std::string const& toReplace, std::
 /// \brief replace_non_allowed_programming_characters
 /// \param s
 /// \return
-string replace_non_allowed_programming_characters(std::string& s, int& api_prefix_needed)
+string replace_non_allowed_programming_characters(std::string& s)
 {
     string out = "";
-
-    if(api_prefix_needed)
-        out = "$";
+    if (s[0] == '$')
+        out=s;
 
     for (char& c: s)
     {
-        if (c=='/'){ out+="div"; }
-        if (c=='*'){ out+="mul"; }
-        if (c=='+'){ out+="sum"; }
-        if (c=='-'){ out+="res"; }
+        if (c=='/'){ out+="_div_"; }
+        if (c=='*'){ out+="_mul_"; }
+        if (c=='+'){ out+="_sum_"; }
+        if (c=='-'){ out+="_res_"; }
         if (c=='='){ out+="_equ_"; }
         if (c=='!'){ out+="_not_"; }
         if (c=='<'){ out+="_lower_" ; }
@@ -955,15 +954,41 @@ string replace_non_allowed_programming_characters(std::string& s, int& api_prefi
 }
 
 
+vector<string> get_words_in_a_string(string str)
+{
+    vector<string> output;
+    string word = "";
+
+    for (auto x : str)
+    {
+        if (isalnum(x))
+        {
+            word = word + x;
+        }else if (x=='_')
+        {
+            word = word + x;
+        }
+        else
+        //if (x == ' ')
+        {
+            output.push_back(word);
+            word = "";
+        }
+    }
+
+    output.push_back(word);
+    return output;
+}
+
+
 ///Returns the number of apprearances of a substring
 ///@brief WordOccurrence
 ///@param sentence
 ///@param word
 ///@return
-
 int WordOccurrence(char *sentence, char *word)
 {
-    const int slen = strlen(sentence);
+    int slen = strlen(sentence);
     int wordlen = strlen(word);
     int count = 0;
     int i, j;
@@ -980,7 +1005,6 @@ int WordOccurrence(char *sentence, char *word)
             count++;
         }
     }
-
     return count;
 }
 
