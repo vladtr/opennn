@@ -99,49 +99,49 @@ int main(int argc, char* argv[])
         //       TEST 2          //
         //=======================//
 
-        //NeuralNetwork nn(NeuralNetwork::ProjectType::Forecasting, {4, 6, 3});
-        //Eigen::Tensor<string, 1> t2(4);
-        //t2(0) = "asdas";
-        //t2(1) = "input2";
-        //t2(2) = "a,sda.da.s,dásd+la";
-        //t2(3) = "inputasd";
+        NeuralNetwork nn(NeuralNetwork::ProjectType::Forecasting, {4, 6, 3});
+        Eigen::Tensor<string, 1> t2(4);
+        t2(0) = "asdas";
+        t2(1) = "input2";
+        t2(2) = "a,sda.da.s,dásd+la";
+        t2(3) = "inputasd";
 
-        //Eigen::Tensor<string, 1> t(3);
-        //t(0) = "a´d.ad.asD.";
-        //t(1) = "output2";
-        //t(2) = "outpusadk2";
+        Eigen::Tensor<string, 1> t(3);
+        t(0) = "a´d.ad.asD.";
+        t(1) = "output2";
+        t(2) = "outpusadk2";
 
-        //nn.set_inputs_names(t2);
-        //nn.set_outputs_names(t);
+        nn.set_inputs_names(t2);
+        nn.set_outputs_names(t);
 
-        //string expression_api = nn.write_expression_api();
-        //cout << expression_api << endl;
+        string expression_api = nn.write_expression_python();
+        cout << expression_api << endl;
 
 
         //=======================//
         //       TEST 3          //
         //=======================//
 
-        NeuralNetwork nn;
+        //NeuralNetwork nn;
 
-        LongShortTermMemoryLayer lstm (3,3);
-        lstm.set_activation_function("Logistic");
-        nn.add_layer(&lstm);
+        //LongShortTermMemoryLayer lstm (3,3);
+        //lstm.set_activation_function("Logistic");
+        //nn.add_layer(&lstm);
 
-        Eigen::Tensor<string, 1> t2(3);
-        t2(0) = "";
-        t2(1) = "Id< z>=x?";
-        t2(2) = "Id_3-_.";
+        //Eigen::Tensor<string, 1> t2(3);
+        //t2(0) = "";
+        //t2(1) = "Id< z>=x?";
+        //t2(2) = "Id_3-_.";
 
-        Eigen::Tensor<string, 1> t(3);
-        t(0) = "asdf";
-        t(1) = "output2";
-        t(2) = "output3";
-        nn.set_inputs_names(t2);
-        nn.set_outputs_names(t);
+        //Eigen::Tensor<string, 1> t(3);
+        //t(0) = "";
+        //t(1) = "output2";
+        //t(2) = "output3";
+        //nn.set_inputs_names(t2);
+        //nn.set_outputs_names(t);
 
-        string expression_py   = nn.write_expression_api();
-        cout << expression_py << endl;
+        //string expression_py   = nn.write_expression_python();
+        //cout << expression_py << endl;
 
 
         //=======================//

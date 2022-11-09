@@ -3286,7 +3286,7 @@ string NeuralNetwork::write_expression() const
                 }
                 else
                 {
-                    outputs_names_vector(i) = "input_" + to_string(i);
+                    outputs_names_vector(i) = "output_" + to_string(i);
                 }
             }
             buffer << layers_pointers[i]->write_expression(inputs_names_vector, outputs_names_vector) << endl;
@@ -3388,7 +3388,8 @@ string NeuralNetwork::write_expression_api() const
     {
         if (outputs_base[i].empty())
         {
-            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+            outputs(i) = "output_" + to_string(i);
+            buffer << "\t" << to_string(i) + ") " << outputs(i) << endl;
         }
         else
         {
@@ -3635,14 +3636,7 @@ string NeuralNetwork::write_expression_api() const
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i].empty())
-        {
-            buffer << ", 'output" << to_string(i) + "' => " << "$out" + to_string(i) << endl;
-        }
-        else
-        {
-            buffer << ", '" << outputs(i) << "' => " << "$" << outputs[i] << endl;
-        }
+        buffer << ", '" << outputs(i) << "' => " << "$" << outputs[i] << endl;
     }
 
     buffer << "];" << endl;
@@ -3846,7 +3840,6 @@ string NeuralNetwork::write_expression_javascript() const{
 	buffer << "\t" << "inputs[2] = input3;"       << endl;
 	buffer << "\t" << ". . ." << endl;
     buffer << "\n" << endl;
-
     buffer << "Inputs Names:" <<endl;
 
     const Tensor<string, 1> inputs_base = get_inputs_names();
@@ -3858,11 +3851,13 @@ string NeuralNetwork::write_expression_javascript() const{
     string input_name_aux;
     string output_name_aux;
 
+    //Hacer funcion para esto
     for (int i = 0; i < inputs_base.dimension(0); i++)
     {
         if (inputs_base[i].empty())
         {
-            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
+            inputs(i) = "input_" + to_string(i);
+            buffer << "\t" << to_string(i) + ") " << inputs(i) << endl;
         }
         else
         {
@@ -3873,11 +3868,13 @@ string NeuralNetwork::write_expression_javascript() const{
         }
     }
 
+    //Hacer funcion para esto
     for (int i = 0; i < outputs_base.dimension(0); i++)
     {
         if (outputs_base[i].empty())
         {
-            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+            outputs(i) = "output_" + to_string(i);
+            buffer << "\t" << to_string(i) + ") " << outputs(i) << endl;
         }
         else
         {
@@ -3895,16 +3892,8 @@ string NeuralNetwork::write_expression_javascript() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i].empty())
-        {
-            buffer << "\t" << "var " << "input_" << to_string(i) <<" =" << " /*enter your value here*/; " << endl;
-            buffer << "\t" << "inputs.push(" << "input_" << to_string(i) << ");" << endl;
-        }
-        else
-        {
-            buffer << "\t" << "var " << inputs[i] << " =" << " /*enter your value here*/; " << endl;
-            buffer << "\t" << "inputs.push(" << inputs[i] << ");" << endl;
-        }
+        buffer << "\t" << "var " << inputs[i] << " =" << " /*enter your value here*/; " << endl;
+        buffer << "\t" << "inputs.push(" << inputs[i] << ");" << endl;
     }
 
     buffer << "\n\t" << "var outputs = calculate_outputs(inputs); " << endl;
@@ -3934,19 +3923,12 @@ string NeuralNetwork::write_expression_javascript() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i].empty())
-        {
-            buffer << "\t" << "var " << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "];" << endl;
-        }
-        else
-        {
-            buffer << "\t" << "var " << inputs[i] << " = " << "inputs[" << to_string(i) << "];" << endl;
-        }
+        buffer << "\t" << "var " << inputs[i] << " = " << "inputs[" << to_string(i) << "];" << endl;
     }
 
     buffer << "" << endl;
     
-    
+    //hacer funcion para esto??
     for (auto& t:tokens)
     {
         string word = "";
@@ -3988,6 +3970,7 @@ string NeuralNetwork::write_expression_javascript() const{
         {
             buffer << "\t\t" << "cell_state_" << to_string(i) << " = 0" << endl;
         }
+
         buffer << "\t}\n" << endl;
     }
 
@@ -4161,7 +4144,8 @@ string NeuralNetwork::write_expression_javascript() const{
         buffer << "\n" << endl;
     }
 
-    if(LSTM_number>0){
+    if(LSTM_number>0)
+    {
         buffer << "var steps = 3;            " << endl;
         buffer << "var time_steps = steps;   " << endl;
         buffer << "var time_step_counter = 1;" << endl;
@@ -4176,9 +4160,10 @@ string NeuralNetwork::write_expression_javascript() const{
             buffer << "var " << "var cell_state_" << to_string(i) << " = 0" << endl;
         }
     }
-    buffer << "\n" << "main()" << endl;
 
+    buffer << "\n" << "main()" << endl;
     string out = buffer.str();
+
     if(LSTM_number>0)
     {
         replace_all_appearances(out, "(t)", "");
@@ -4186,6 +4171,7 @@ string NeuralNetwork::write_expression_javascript() const{
         replace_all_appearances(out, "var cell_state"  , "cell_state"  );
         replace_all_appearances(out, "var hidden_state", "hidden_state");
     }
+
     return out;
 
 }
@@ -4195,10 +4181,10 @@ string NeuralNetwork::write_expression_javascript() const{
 
 string NeuralNetwork::write_expression_python() const{
 
+    ostringstream buffer;
     vector<std::string> found_tokens;
     vector<std::string> found_tokens2;
 
-    ostringstream buffer;
     int LSTM_number = get_long_short_term_memory_layers_number();
     int cell_state_counter = 0;
     int hidden_state_counter = 0;
@@ -4213,8 +4199,6 @@ string NeuralNetwork::write_expression_python() const{
     bool SoftPlus     = false;
     bool SoftSign     = false;
 
-
-
     buffer << "\'\'\' " << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
     buffer << "artelnics@artelnics.com\t" << endl;
@@ -4223,7 +4207,6 @@ string NeuralNetwork::write_expression_python() const{
     buffer << "You can manage it with the main method where you \t" << endl;
     buffer << "can change the values of your inputs. For example:" << endl;
     buffer << "" << endl;
-
     buffer << "if we want to add these 3 values (0.3, 2.5 and 1.8)" << endl;
     buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
     buffer << "main program has to look like this:" << endl;
@@ -4243,22 +4226,6 @@ string NeuralNetwork::write_expression_python() const{
     buffer << "\n" << endl;
     buffer << "Inputs Names: \t" << endl;
 
-    //const Tensor<string, 1> inputs = get_inputs_names();
-    //const Tensor<string, 1> outputs = get_outputs_names();
-
-    //for (int i = 0; i < inputs.dimension(0); i++)
-    //{
-    //    if (inputs[i].empty())
-    //    {
-    //        buffer << "   " << to_string(i) + ") " << "input_" + to_string(i) << endl;
-    //    }
-    //    else
-    //    {
-    //        //inputs[i] = replace_non_allowed_programming_characters(inputs[i]);
-    //        buffer << "   " << to_string(i) + ") " << inputs[i] << endl;
-    //    }
-    //}
-
     const Tensor<string, 1> inputs_base = get_inputs_names();
     Tensor<string, 1> inputs(inputs_base.dimension(0));
 
@@ -4268,11 +4235,13 @@ string NeuralNetwork::write_expression_python() const{
     string input_name_aux;
     string output_name_aux;
 
+    //Hacer funcion para esto
     for (int i = 0; i < inputs_base.dimension(0); i++)
     {
         if (inputs_base[i].empty())
         {
-            buffer << "\t" << to_string(i) + ") " << "input_" + to_string(i) << endl;
+            inputs(i) = "input_" + to_string(i);
+            buffer << "\t" << to_string(i) + ") " << inputs(i) << endl;
         }
         else
         {
@@ -4283,11 +4252,13 @@ string NeuralNetwork::write_expression_python() const{
         }
     }
 
+    //Hacer funcion para esto
     for (int i = 0; i < outputs_base.dimension(0); i++)
     {
         if (outputs_base[i].empty())
         {
-            buffer << "\t" << to_string(i) + ") " << "ouput_" + to_string(i) << endl;
+            outputs(i) = "output_" + to_string(i);
+            buffer << "\t" << to_string(i) + ") " << outputs(i) << endl;
         }
         else
         {
@@ -4325,7 +4296,6 @@ string NeuralNetwork::write_expression_python() const{
 
     for (auto& t:tokens)
     {
-
         size_t substring_length0 = t.find(target_string0);
         size_t substring_length1 = t.find(target_string1);
         size_t substring_length2 = t.find(target_string2);
@@ -4347,16 +4317,17 @@ string NeuralNetwork::write_expression_python() const{
         if (substring_length8 < t.size() && substring_length8!=0){ SoftSign = true; }
 
         string word = "";
+
         for (char& c : t)
         {
             if ( c!=' ' && c!='=' ){ word += c; }
             else { break; }
         }
+
         if (word.size() > 1)
         {
             found_tokens.push_back(word);
         }
-
     }
 
     for (string & token: found_tokens)
@@ -4495,14 +4466,7 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i].empty())
-        {
-            buffer << "\t\t" << "input_" << to_string(i) << " = " << "inputs[" << to_string(i) << "]" << endl;
-        }
-        else
-        {
-            buffer << "\t\t" << inputs[i] << " = " << "inputs[" << to_string(i) << "]" << endl;
-        }
+        buffer << "\t\t" << inputs[i] << " = " << "inputs[" << to_string(i) << "]" << endl;
     }
 
     if (LSTM_number>0)
@@ -4520,6 +4484,7 @@ string NeuralNetwork::write_expression_python() const{
             buffer << "\t\t\t" << "self.cell_state_" << to_string(i) << " = 0" << endl;
         }
     }
+
     buffer << "" << endl;
 
     found_tokens.clear();
@@ -4561,7 +4526,8 @@ string NeuralNetwork::write_expression_python() const{
             replace_all_appearances(t, key_word, new_word);
         }
 
-        if(LSTM_number>0){
+        if(LSTM_number>0)
+        {
             replace_all_appearances(t, "(t)", "");
             replace_all_appearances(t, "(t-1)", "");
             replace_all_appearances(t, "cell_state", "self.cell_state");
@@ -4572,16 +4538,10 @@ string NeuralNetwork::write_expression_python() const{
     }
 
     buffer << "\t\t" << "out = " << "[None]*" << outputs.size() << "" << endl;
+
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        if (outputs[i].empty())
-        {
-            buffer << "\t\t" << "out[" << to_string(i) << "] = " << "output" << to_string(i) << endl;
-        }
-        else
-        {
-            buffer << "\t\t" << "out[" << to_string(i) << "] = " << outputs[i] << endl;
-        }
+        buffer << "\t\t" << "out[" << to_string(i) << "] = " << outputs[i] << endl;
     }
 
     if(LSTM_number>0)
@@ -4597,16 +4557,8 @@ string NeuralNetwork::write_expression_python() const{
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        if (inputs[i].empty())
-        {
-            buffer << "\t\t" << "input_"  << to_string(i) << " = "  << "default_val" << "\t" << "#Change this value" << endl;
-            buffer << "\t\t" << "inputs[" << to_string(i) << "] = " << "input_" << to_string(i) << "\n" << endl;
-        }
-        else
-        {
-            buffer << "\t\t" << inputs[i] << " = " << "default_val" << "\t" << "#Change this value" << endl;
-            buffer << "\t\t" << "inputs[" << to_string(i) << "] = " << inputs[i] << "\n" << endl;
-        }
+        buffer << "\t\t" << inputs[i] << " = " << "default_val" << "\t" << "#Change this value" << endl;
+        buffer << "\t\t" << "inputs[" << to_string(i) << "] = " << inputs[i] << "\n" << endl;
     }
 
     buffer << "" << endl;
@@ -4618,16 +4570,20 @@ string NeuralNetwork::write_expression_python() const{
     {
         buffer << "\t\t" << "print( \""<< "\\t " << outputs[i] << ":\" "<< "+ " << "str(outputs[" << to_string(i) << "])" << " + " << "\"\\n\" )" << endl;
     }
+
     buffer << "\n";
 
     if (LSTM_number>0){
         buffer << "steps = 3" << endl;
         buffer << "nn = NeuralNetwork(steps)" << endl;
         buffer << "nn.main()" << endl;
-    }else{
+    }
+    else
+    {
         buffer << "nn = NeuralNetwork()" << endl;
         buffer << "nn.main()" << endl;
     }
+
     string out = buffer.str();
     return out;
 }
