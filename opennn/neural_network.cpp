@@ -3802,6 +3802,11 @@ string NeuralNetwork::write_expression_javascript() const{
     vector<std::string> found_tokens2;
     ostringstream buffer;
 
+    string expression = write_expression();
+    vector<std::string> tokens;
+    std::string token;
+    std::stringstream ss(expression);
+
     int LSTM_number = get_long_short_term_memory_layers_number();
     int cell_state_counter = 0;
     int hidden_state_counter = 0;
@@ -3816,7 +3821,7 @@ string NeuralNetwork::write_expression_javascript() const{
     bool SoftPlus     = false;
     bool SoftSign     = false;
 
-    buffer << "/*" << endl;
+    buffer << "<!--" << endl;
     buffer << "Artificial Intelligence Techniques SL\t" << endl;
     buffer << "artelnics@artelnics.com\t" << endl;
     buffer << "" << endl;
@@ -3829,7 +3834,7 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "to our 3 inputs (Input_1, Input_2 and Input_1), the" << endl;
     buffer << "main program has to look like this:" << endl;
     buffer << "\t" << endl;
-    buffer << "int main(){ " << endl;
+    buffer << "int neuralNetwork(){ " << endl;
 	buffer << "\t" << "vector<float> inputs(3);"<< endl;
     buffer << "\t" << endl;
 	buffer << "\t" << "const float asdas  = 0.3;" << endl;
@@ -3884,32 +3889,115 @@ string NeuralNetwork::write_expression_javascript() const{
         }
     }
 
-    buffer << "*/" << endl;
+    buffer << "-->" << endl;
     buffer << "\n" << endl;
-    buffer << "function main()" << endl;
+    buffer << "<!DOCTYPE HTML>" << endl;
+    buffer << "<html lang=\"en\">" << endl;
+    buffer << "\n" << endl;
+    buffer << "<head>" << endl;
+    buffer << "<link href=\"https://www.neuraldesigner.com/assets/css/neuraldesigner.css\" rel=\"stylesheet\" />" << endl;
+    buffer << "<link href=\"https://www.neuraldesigner.com/images/fav.ico\" rel=\"shortcut icon\" type=\"image/x-icon\" />" << endl;
+    buffer << "</head>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<body>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<section>" << endl;
+    buffer << "<br/>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<div align=\"center\" style=\"display:block;text-align: center;\">" << endl;
+    buffer << "<!-- MENU OPTIONS HERE  -->" << endl;
+    buffer << "<form style=\"display: inline-block;margin-left: auto; margin-right: auto; text-align: left;\">" << endl;
+    buffer << "\n" << endl;
+    buffer << "<table border=\"1px\" class=\"form\">" << endl;
+    buffer << "\n" << endl;
+
+    if (has_scaling_layer())
+    {
+        Tensor<Descriptives, 1>  inputs_descriptives = get_scaling_layer_pointer()->get_descriptives();
+
+        //inputs with scaling layer
+        for (int i = 0; i < inputs.dimension(0); i++)
+        {
+            buffer << "<!-- "<< to_string(i) <<"scaling layer -->" << endl;
+            buffer << "<tr style=\"height:3.5em\">" << endl;
+            buffer << "<td> " << inputs_names[i] << " </td>" << endl;
+            buffer << "<td style=\"text-align:center\">" << endl;
+            buffer << "<input type=\"range\" id=\"" << inputs[i] << "\" value=\"" << inputs_descriptives(0).minimum << "\" min=\"" << inputs_descriptives(0).minimum << "\" max=\"" << inputs_descriptives(0).maximum << "\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "_text')\" />" << endl;
+            buffer << "<input class=\"tabla\" type=\"number\" id=\"" << inputs[i] << "_text\" value=\"" << inputs_descriptives(0).minimum << "\" min=\"" << inputs_descriptives(0).minimum << "\" max=\"" << inputs_descriptives(0).maximum << "\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "')\">" << endl;
+            buffer << "</td>" << endl;
+            buffer << "</tr>" << endl;
+            buffer << "\n" << endl;
+        }
+    }
+    else
+    {
+        //inputs with no scaling layer
+        for (int i = 0; i < inputs.dimension(0); i++)
+        {
+            buffer << "<!-- "<< to_string(i) <<"no scaling layer -->" << endl;
+            buffer << "<tr style=\"height:3.5em\">" << endl;
+            buffer << "<td> " << inputs_names[i] << " </td>" << endl;
+            buffer << "<td style=\"text-align:center\">" << endl;
+            buffer << "<input type=\"range\" id=\"" << inputs[i] << "\" value=\"-1\" min=\"-1\" max=\"1\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "_text')\" />" << endl;
+            buffer << "<input class=\"tabla\" type=\"number\" id=\"" << inputs[i] << "_text\" value=\"-1\" min=\"-1\" max=\"1\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "')\">" << endl;
+            buffer << "</td>" << endl;
+            buffer << "</tr>" << endl;
+            buffer << "\n" << endl;
+        }
+    }
+
+    buffer << "</table>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<br/>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<table border=\"1px\" class=\"form\">" << endl;
+
+    //ouputs
+    for (int i = 0; i < outputs.dimension(0); i++)
+    {
+        buffer << "<tr style=\"height:3.5em\">" << endl;
+        buffer << "<td> " << outputs_names[i] << " </td>" << endl;
+        buffer << "<td>" << endl;
+        buffer << "<input id=\"" << outputs[i] << "\" value=\"\" type=\"text\"  disabled/>" << endl;
+        buffer << "</td>" << endl;
+        buffer << "</tr>" << endl;
+        buffer << "\n" << endl;
+    }
+
+    buffer << "</table>" << endl;
+    buffer << "\n" << endl;
+    buffer << "</form>" << endl;
+    buffer << "</div>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<div align=\"center\">" << endl;
+    buffer << "<!-- BUTTON HERE -->" << endl;
+    buffer << "<button class=\"btn\" onclick=\"neuralNetwork()\">submit</button>" << endl;
+    buffer << "</div>" << endl;
+    buffer << "\n" << endl;
+    buffer << "</section>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<script>" << endl;
+
+    buffer << "function neuralNetwork()" << endl;
     buffer << "{" << endl;
     buffer << "\t" << "var inputs = [];" << endl;
 
     for (int i = 0; i < inputs.dimension(0); i++)
     {
-        buffer << "\t" << "var " << inputs[i] << " =" << " /*enter your value here*/; " << endl;
+        buffer << "\t" << "var " << inputs[i] << " =" << " document.getElementById(\"" << inputs[i] << "\").value; " << endl;
         buffer << "\t" << "inputs.push(" << inputs[i] << ");" << endl;
     }
 
-    buffer << "\n\t" << "var outputs = calculate_outputs(inputs); " << endl;
-    buffer << "\t" << "console.log(\"\\nThese are your outputs:\")" << "\n" << endl;
+    buffer << "\n" << "\t" << "var outputs = calculate_outputs(inputs); " << endl;
 
     for (int i = 0; i < outputs.dimension(0); i++)
     {
-        buffer << "\t" << "console.log(\"\\n\\t "<< outputs[i] << ":\");" << endl;
-        buffer << "\tconsole.log(\"\\t   \" + outputs[" << to_string(i) << "] );" << "\n" << endl;
+        buffer << "\t" << "var " << outputs[i] << " = document.getElementById(\"" << outputs[i] << "\");" << endl;
+        buffer << "\t" << outputs[i] << ".value = outputs[" << to_string(i) << "].toFixed(4);" << endl;
     }
+
+    buffer << "\t" << "update_LSTM();" << endl;
     buffer << "}" << "\n" << endl;
-    
-    string expression = write_expression();
-    vector<std::string> tokens;
-    std::string token;
-    std::stringstream ss(expression);
 
     while (getline(ss, token, '\n'))
     {
@@ -3927,7 +4015,7 @@ string NeuralNetwork::write_expression_javascript() const{
     }
 
     buffer << "" << endl;
-    
+
     //hacer funcion para esto??
     for (auto& t:tokens)
     {
@@ -4040,9 +4128,28 @@ string NeuralNetwork::write_expression_javascript() const{
     {
         buffer << "\t" << "out.push(" << outputs[i] << ");" << endl;
     }
-    
+
     buffer << "\n\t" << "return out;" << endl;
     buffer << "}" << "\n" << endl;
+
+    if(LSTM_number>0)
+    {
+        buffer << "\t" << "var steps = 3;            " << endl;
+        buffer << "\t" << "var time_steps = steps;   " << endl;
+        buffer << "\t" << "var time_step_counter = 1;" << endl;
+
+        for(int i = 0; i < hidden_state_counter; i++)
+        {
+            buffer << "\t" << "var " << "var hidden_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        for(int i = 0; i < cell_state_counter; i++)
+        {
+            buffer << "\t" << "var " << "var cell_state_" << to_string(i) << " = 0" << endl;
+        }
+
+        buffer << "\n" << endl;
+    }
 
     if(logistic)
     {
@@ -4144,24 +4251,23 @@ string NeuralNetwork::write_expression_javascript() const{
         buffer << "\n" << endl;
     }
 
-    if(LSTM_number>0)
-    {
-        buffer << "var steps = 3;            " << endl;
-        buffer << "var time_steps = steps;   " << endl;
-        buffer << "var time_step_counter = 1;" << endl;
+    buffer << "function updateTextInput1(val, id)" << endl;
+    buffer << "{" << endl;
+    buffer << "\t"<< "document.getElementById(id).value = val;" << endl;
+    buffer << "}" << endl;
+    buffer << "\n" << endl;
+    buffer << "window.onresize = showDiv;" << endl;
+    buffer << "\n" << endl;
+    buffer << "</script>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<!--script src=\"https://www.neuraldesigner.com/app/htmlparts/footer.js\"></script-->" << endl;
+    buffer << "\n" << endl;
+    buffer << "\n" << endl;
+    buffer << "\n" << endl;
+    buffer << "</body>" << endl;
+    buffer << "\n" << endl;
+    buffer << "</html>" << endl;
 
-        for(int i = 0; i < hidden_state_counter; i++)
-        {
-            buffer << "var " << "var hidden_state_" << to_string(i) << " = 0" << endl;
-        }
-
-        for(int i = 0; i < cell_state_counter; i++)
-        {
-            buffer << "var " << "var cell_state_" << to_string(i) << " = 0" << endl;
-        }
-    }
-
-    buffer << "\n" << "main()" << endl;
     string out = buffer.str();
 
     if(LSTM_number>0)
