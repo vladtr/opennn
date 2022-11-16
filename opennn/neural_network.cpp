@@ -3906,10 +3906,11 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "\n" << endl;
     buffer << "<div align=\"center\" style=\"display:block;text-align: center;\">" << endl;
     buffer << "<!-- MENU OPTIONS HERE  -->" << endl;
-    buffer << "<form style=\"display: inline-block;margin-left: auto; margin-right: auto; text-align: left;\">" << endl;
+    buffer << "<form style=\"display: inline-block;margin-left: auto; margin-right: auto;\">" << endl;
     buffer << "\n" << endl;
     buffer << "<table border=\"1px\" class=\"form\">" << endl;
     buffer << "\n" << endl;
+    buffer << "INPUTS" << endl;
 
     if (has_scaling_layer())
     {
@@ -3922,11 +3923,13 @@ string NeuralNetwork::write_expression_javascript() const{
             buffer << "<tr style=\"height:3.5em\">" << endl;
             buffer << "<td> " << inputs_names[i] << " </td>" << endl;
             buffer << "<td style=\"text-align:center\">" << endl;
-            buffer << "<input type=\"range\" id=\"" << inputs[i] << "\" value=\"" << inputs_descriptives(0).minimum << "\" min=\"" << inputs_descriptives(0).minimum << "\" max=\"" << inputs_descriptives(0).maximum << "\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "_text')\" />" << endl;
-            buffer << "<input class=\"tabla\" type=\"number\" id=\"" << inputs[i] << "_text\" value=\"" << inputs_descriptives(0).minimum << "\" min=\"" << inputs_descriptives(0).minimum << "\" max=\"" << inputs_descriptives(0).maximum << "\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "')\">" << endl;
+            buffer << "<input type=\"range\" id=\"" << inputs[i] << "\" value=\"" << (inputs_descriptives(0).minimum + inputs_descriptives(0).maximum)/2 << "\" min=\"" << inputs_descriptives(0).minimum << "\" max=\"" << inputs_descriptives(0).maximum << "\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "_text')\" />" << endl;
+            buffer << "<input class=\"tabla\" type=\"number\" id=\"" << inputs[i] << "_text\" value=\"" << (inputs_descriptives(0).minimum + inputs_descriptives(0).maximum)/2 << "\" min=\"" << inputs_descriptives(0).minimum << "\" max=\"" << inputs_descriptives(0).maximum << "\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "')\">" << endl;
             buffer << "</td>" << endl;
             buffer << "</tr>" << endl;
             buffer << "\n" << endl;
+
+
         }
     }
     else
@@ -3938,8 +3941,8 @@ string NeuralNetwork::write_expression_javascript() const{
             buffer << "<tr style=\"height:3.5em\">" << endl;
             buffer << "<td> " << inputs_names[i] << " </td>" << endl;
             buffer << "<td style=\"text-align:center\">" << endl;
-            buffer << "<input type=\"range\" id=\"" << inputs[i] << "\" value=\"-1\" min=\"-1\" max=\"1\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "_text')\" />" << endl;
-            buffer << "<input class=\"tabla\" type=\"number\" id=\"" << inputs[i] << "_text\" value=\"-1\" min=\"-1\" max=\"1\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "')\">" << endl;
+            buffer << "<input type=\"range\" id=\"" << inputs[i] << "\" value=\"0\" min=\"-1\" max=\"1\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "_text')\" />" << endl;
+            buffer << "<input class=\"tabla\" type=\"number\" id=\"" << inputs[i] << "_text\" value=\"0\" min=\"-1\" max=\"1\" step=\"0.01\" onchange=\"updateTextInput1(this.value, '" << inputs[i] << "')\">" << endl;
             buffer << "</td>" << endl;
             buffer << "</tr>" << endl;
             buffer << "\n" << endl;
@@ -3947,10 +3950,17 @@ string NeuralNetwork::write_expression_javascript() const{
     }
 
     buffer << "</table>" << endl;
+    buffer << "</form>" << endl;
+    buffer << "\n" << endl;
+    buffer << "<div align=\"center\">" << endl;
+    buffer << "<!-- BUTTON HERE -->" << endl;
+    buffer << "<button class=\"btn\" onclick=\"neuralNetwork()\">calculate outputs</button>" << endl;
+    buffer << "</div>" << endl;
     buffer << "\n" << endl;
     buffer << "<br/>" << endl;
     buffer << "\n" << endl;
     buffer << "<table border=\"1px\" class=\"form\">" << endl;
+    buffer << "OUTPUTS" << endl;
 
     //ouputs
     for (int i = 0; i < outputs.dimension(0); i++)
@@ -3958,7 +3968,7 @@ string NeuralNetwork::write_expression_javascript() const{
         buffer << "<tr style=\"height:3.5em\">" << endl;
         buffer << "<td> " << outputs_names[i] << " </td>" << endl;
         buffer << "<td>" << endl;
-        buffer << "<input id=\"" << outputs[i] << "\" value=\"\" type=\"text\"  disabled/>" << endl;
+        buffer << "<input style=\"text-align:right; padding-right:20px;\" id=\"" << outputs[i] << "\" value=\"\" type=\"text\"  disabled/>" << endl;
         buffer << "</td>" << endl;
         buffer << "</tr>" << endl;
         buffer << "\n" << endl;
@@ -3967,11 +3977,6 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "</table>" << endl;
     buffer << "\n" << endl;
     buffer << "</form>" << endl;
-    buffer << "</div>" << endl;
-    buffer << "\n" << endl;
-    buffer << "<div align=\"center\">" << endl;
-    buffer << "<!-- BUTTON HERE -->" << endl;
-    buffer << "<button class=\"btn\" onclick=\"neuralNetwork()\">submit</button>" << endl;
     buffer << "</div>" << endl;
     buffer << "\n" << endl;
     buffer << "</section>" << endl;
@@ -4261,8 +4266,6 @@ string NeuralNetwork::write_expression_javascript() const{
     buffer << "</script>" << endl;
     buffer << "\n" << endl;
     buffer << "<!--script src=\"https://www.neuraldesigner.com/app/htmlparts/footer.js\"></script-->" << endl;
-    buffer << "\n" << endl;
-    buffer << "\n" << endl;
     buffer << "\n" << endl;
     buffer << "</body>" << endl;
     buffer << "\n" << endl;
