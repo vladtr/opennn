@@ -23,4 +23,6 @@ add_subdirectory(outlier_detection)
 add_subdirectory(rosenbrock)
 add_subdirectory(simple_approximation)
 add_subdirectory(simple_classification)
+add_subdirectory(amazon_reviews)
+
 

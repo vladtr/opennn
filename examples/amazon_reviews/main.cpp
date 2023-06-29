@@ -33,7 +33,7 @@ int main()
 
         DataSet data_set;
 
-        data_set.set_data_file_name("../data/amazon_cells_labelled.txt");
+        data_set.set_data_file_name("data/amazon_cells_labelled.txt");
         data_set.set_text_separator(DataSet::Separator::Tab);
 
         data_set.read_txt();
@@ -95,8 +95,8 @@ int main()
 
         // Save results
 
-        neural_network.save_expression_c("../data/amazon_reviews.txt");
-        neural_network.save_expression_python("../data/amazon_reviews.py");
+        neural_network.save_expression_c("data/amazon_reviews.txt");
+        neural_network.save_expression_python("data/amazon_reviews.py");
 
         cout << "Good bye!" << endl;
 
